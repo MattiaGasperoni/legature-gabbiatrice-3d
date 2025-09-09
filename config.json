@@ -1,0 +1,30 @@
+{
+  "sick_settings": {
+    "transportProtocol": "TCP",
+    "deviceIpAddr": "192.168.7.200",
+    "receiverIp": "192.168.1.2",
+    "storeData": false,
+    "filePrefix": "",
+    "streamingPort": 2114,
+    "cnt": 10,
+    "showHelpAndExit": false
+  },
+  "_comment_frame": "Settings del frame",
+  "frame": {
+    "scale": 0.5
+  },
+  "_comment_plane": "Origine e normale del piano per la proiezione",
+  "projectonPlane": {
+    "origin": [ 0.0, 0.0, 0.0 ],
+    "normal": [ 0.0, 0.0, 1.0 ]
+  },
+  "_comment_points3D": "Setting per effettuare i tagli dei punti tramite piani",
+  "originCutPlanes": [
+    [ 187.899, 206.022, 789.286 ],
+    [ 347.869, -13.978, 789.286 ]
+  ],
+  "planeCutInclination": [
+    [ 360, 180.05, 270 ],
+    [ 10, 270, 230 ]
+  ]
+}

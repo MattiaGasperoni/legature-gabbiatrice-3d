@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemDefinitionGroup>
+		<ClCompile>
+			<AdditionalIncludeDirectories>
+				C:\open3d\include;
+				C:\Users\mattia.gasperoni\source\repos\test-libreria-hough\test-libreria-hough\libs;
+				C:\libs\eigen-3.4.0;
+				C:\Users\mattia.gasperoni\Desktop\libsDownload\vcpkg\installed\x64-windows\include\opencv4;
+				C:\open3d\include\open3d\3rdparty;
+				C:\Users\mattia.gasperoni\source\repos\LegatureGabbiatrice;
+				%(AdditionalIncludeDirectories)
+			</AdditionalIncludeDirectories>
+		</ClCompile>
+		<Link>
+			<AdditionalDependencies>
+				sick_visionary_cpp_base.lib;
+				%(AdditionalDependencies)
+			</AdditionalDependencies>
+			<AdditionalLibraryDirectories>
+				$(ProjectDir)lib;
+				%(AdditionalLibraryDirectories)
+			</AdditionalLibraryDirectories>
+		</Link>
+	</ItemDefinitionGroup>
+</Project>
