@@ -84,7 +84,25 @@ PointCloud convertPointCloud(const std::vector<PointXYZ>& oldPointCloud);
 // Proietta una nuvola di punti 3D su un piano definito da origine e normale,
 // disegnando ogni punto proiettato come cerchio sull'immagine OpenCV.
 // Calcola automaticamente i bounds dalla nuvola stessa.
-void projectAndDrawPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eigen::Vector3d& origin, const Eigen::Vector3d& normal, double scale, int img_width, int img_height, cv::Scalar color = cv::Scalar(255, 255, 255));
+void projectAndDrawPointCloud(
+    const cv::Mat&         image, 
+    const PointCloud&      cloud, 
+    const Eigen::Vector3d& origin, 
+    const Eigen::Vector3d& normal, 
+    double                 scale, 
+    int                    img_width, 
+    int                    img_height,
+    cv::Scalar             color = cv::Scalar(255, 255, 255)
+);
 
 // Funzione per processare point cloud e convertirla in immagine
-cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale, std::vector<Vector3d> originCutPlanes, std::vector<Vector3d> inclinationCutPlanes);
+cv::Mat processPointCloud(
+    const std::vector<PointXYZ>& cloud,
+    int img_width,
+    int img_height,
+    Eigen::Vector3d& origin,
+    Eigen::Vector3d& normal,
+    double scale,
+    std::vector<Vector3d> originCutPlanes,
+    std::vector<Vector3d> inclinationCutPlanes
+);

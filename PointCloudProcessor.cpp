@@ -121,8 +121,7 @@ PointCloud applyCutPlane(PointCloud inputCloud, const Vector3d& origin, double p
 {
 
 	// Parametri di taglio definitivi
-	std::array<Vector3d, 3> planePoints;
-	planePoints = plane_points_from_anchor_and_euler(origin, pitch, roll, yaw);
+	std::array<Vector3d, 3>	planePoints = plane_points_from_anchor_and_euler(origin, pitch, roll, yaw);
 	inputCloud = cloudPlaneCut(inputCloud, planePoints[0], planePoints[1], planePoints[2], true);
 
 	return inputCloud;
@@ -157,7 +156,7 @@ void cutPointCloud(PointCloud& pointCloud, std::vector<Vector3d> originCutPlanes
 		const auto& pt  = originCutPlanes[i];
 		const auto& inc = inclinationCutPlanes[i];
 
-		//pointCloud = applyCutPlane(pointCloud, pt, inc.x, inc.y, inc.z);
+		pointCloud = applyCutPlane(pointCloud, pt, inc.x, inc.y, inc.z);
 	}
 }
 
@@ -264,6 +263,14 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 		std::cout << "[Debug] Point Cloud points post-cleaning:" << pointCloud.points.size() << "\n" << std::endl;
 
     projectAndDrawPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
+
+	// Hough per trovare i tornidi orizzontali
+
+	// Pulizia della PointCloud 
+
+	// Hough per trovare i tornidi verticali
+
+	// Calcolo e proiezione delle intersezioni
 
     return otp_image;
 }
