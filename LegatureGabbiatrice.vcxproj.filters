@@ -33,8 +33,34 @@
     <ClCompile Include="pointcloud.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="HoughAlgorithm.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="hough.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
+    <ClCompile Include="sphere.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HoughAlgorithm.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="PointCloudProcessor.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="hough.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

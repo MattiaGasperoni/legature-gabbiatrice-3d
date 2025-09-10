@@ -1,12 +1,14 @@
 //
 //   Inclusione di librerie
 //
+#include <cstdlib>
+
 #include "PointCloudProcessor.h"
 #include "pointcloud.h"
 #include "vector3d.h"
+#include "HoughAlgorithm.h"
 
 
-// Funzione per convertire gli angoli in gradi in radianti
 inline double deg2rad(double d)
 {
 	return d * M_PI / 180.0;
@@ -122,7 +124,7 @@ PointCloud applyCutPlane(PointCloud inputCloud, const Vector3d& origin, double p
 
 	// Parametri di taglio definitivi
 	std::array<Vector3d, 3>	planePoints = plane_points_from_anchor_and_euler(origin, pitch, roll, yaw);
-	inputCloud = cloudPlaneCut(inputCloud, planePoints[0], planePoints[1], planePoints[2], true);
+	inputCloud = cloudPlaneCut(inputCloud, planePoints[0], planePoints[1], planePoints[2], true,false);
 
 	return inputCloud;
 }
@@ -130,37 +132,37 @@ PointCloud applyCutPlane(PointCloud inputCloud, const Vector3d& origin, double p
 //-----------------------------------------------------------------------------------------------------------------------
 
 //
-//   Funzioni Helper
+//   Funzioni Helper / Reindirizzanti
 //
 
 PointCloud convertPointCloud(const std::vector<PointXYZ>& oldPointCloud)
 {
-    PointCloud newPointCloud;
-    newPointCloud.points.reserve(oldPointCloud.size());
+	PointCloud newPointCloud;
+	newPointCloud.points.reserve(oldPointCloud.size());
 
-    for (auto&& pt : oldPointCloud)
-    {
-        if (!std::isnan(pt.x) && !std::isnan(pt.y) && !std::isnan(pt.z))
-        {
-            newPointCloud.points.emplace_back(std::move(pt.x), std::move(pt.y), std::move(pt.z));
-        }
-    }
+	for (auto&& pt : oldPointCloud)
+	{
+		if (!std::isnan(pt.x) && !std::isnan(pt.y) && !std::isnan(pt.z))
+		{
+			newPointCloud.points.emplace_back(std::move(pt.x), std::move(pt.y), std::move(pt.z));
+		}
+	}
 
-    return newPointCloud;
+	return newPointCloud;
 }
 
 void cutPointCloud(PointCloud& pointCloud, std::vector<Vector3d> originCutPlanes, std::vector<Vector3d> inclinationCutPlanes)
 {
 	for (std::size_t i = 0; i < originCutPlanes.size(); ++i)
 	{
-		const auto& pt  = originCutPlanes[i];
+		const auto& pt = originCutPlanes[i];
 		const auto& inc = inclinationCutPlanes[i];
 
 		pointCloud = applyCutPlane(pointCloud, pt, inc.x, inc.y, inc.z);
 	}
 }
 
-void projectAndDrawPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eigen::Vector3d& origin, const Eigen::Vector3d& normal, double scale, int img_width, int img_height, cv::Scalar color)
+void projectPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eigen::Vector3d& origin, const Eigen::Vector3d& normal, double scale, int img_width, int img_height, cv::Scalar color)
 {
 	if (cloud.points.empty())
 	{
@@ -232,45 +234,101 @@ void projectAndDrawPointCloud(const cv::Mat& image, const PointCloud& cloud, con
 	}
 }
 
+void filterPointCloud(PointCloud& pointCloud, double neighbor_radius, int min_neighbors, double max_distance)
+{
+	size_t numberOfPoints = pointCloud.points.size();
+	if (numberOfPoints == 0) return;
+
+	// Calcolo del centroide della Point Cloud
+	Vector3d centroid(0, 0, 0);
+
+	for (const auto& p : pointCloud.points)
+		centroid = centroid + p;
+
+	centroid = centroid / numberOfPoints;
+
+	double neighbor_radius2 = neighbor_radius * neighbor_radius;
+	double max_distance2    = max_distance * max_distance;
+
+	PointCloud filtered;
+
+	filtered.points.reserve(numberOfPoints);
+
+	for (int i = 0; i < numberOfPoints; ++i) 
+	{
+		const Vector3d& pt = pointCloud.points[i];
+
+		// Controllo distanza dal centroide
+		if ((pt - centroid).norm() > max_distance2)
+			continue;
+
+		// Conta vicini
+		int neighbors = 0;
+
+		for (int j = 0; j < numberOfPoints; ++j) 
+		{
+			if (i == j) continue;
+			if ((pt - pointCloud.points[j]).norm() <= neighbor_radius2)
+				neighbors++;
+		}
+
+		if (neighbors >= min_neighbors)
+			filtered.points.push_back(pt);
+	}
+	pointCloud.points = std::move(filtered.points);
+}
+
+template <typename T>
+void checkPointCloud(const std::vector<T>& cloud, const std::string& message)
+{
+	if (cloud.empty())
+	{
+		std::cerr << "[Error] The Point Cloud is empty" << std::endl;
+		std::exit(EXIT_FAILURE); // termina il programma
+	}
+	else
+	{
+		std::cout << message << cloud.size() << "\n" << std::endl;
+	}
+}
+
 //
 // Funzione Principale
 //
 
 cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale,std::vector<Vector3d> originCutPlanes,std::vector<Vector3d> inclinationCutPlanes)
 {
-	cv::Mat otp_image(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0)); // Disegno l'immagine nera di sfondo
+	// Creazione immagine OpenCV nera
+	cv::Mat otp_image(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
-    if (cloud.empty())
-        return otp_image;
-	else
-		std::cout << "[Debug] Point Cloud pre-conversion points:" << cloud.size() << "\n" << std::endl;
+	checkPointCloud(cloud, "[Debug] Point Cloud points pre - conversion: ");
 
     PointCloud pointCloud = convertPointCloud(cloud);
 
-    if (pointCloud.points.empty())
-        return otp_image;
-	else
-		std::cout << "[Debug] Point Cloud points:"<< pointCloud.points.size()<<"\n" << std::endl;
+	checkPointCloud(pointCloud.points);
 
 	// Salviamo un istanza della PointCloud prima di Tagliarla
 	PointCloud pointCloud_preCut = pointCloud;
 
+	// Taglio della PointCloud con i piani di taglio definiti in configurazione
 	cutPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
 
-	if (pointCloud.points.empty())
-		return otp_image;
-	else
-		std::cout << "[Debug] Point Cloud points post-cleaning:" << pointCloud.points.size() << "\n" << std::endl;
+	checkPointCloud(pointCloud.points, "[Debug] Point Cloud points post - plane cut: ");
 
-    projectAndDrawPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
+	// Proietto la PointCloud sulla immagine 2D di OpenCV
+    projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
 
 	// Hough per trovare i tornidi orizzontali
+	//PointCloud linesPointCloud = getLineSteelBarsPointCloud(pointCloud);
 
-	// Pulizia della PointCloud 
+	// Pulisco la PointCloud -> [ottenere i parametri via file]
+	filterPointCloud(pointCloud,9.0,25,195.0);
 
 	// Hough per trovare i tornidi verticali
+	//PointCloud arcPointCloud = getArcSteelBarsPointCloud(pointCloud);
 
 	// Calcolo e proiezione delle intersezioni
+	//projectIntersectionPoints(pointCloud_preCut, linesPointCloud, arcPointCloud);
 
     return otp_image;
 }

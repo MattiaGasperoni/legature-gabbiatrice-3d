@@ -45,6 +45,7 @@
 // Definizioni 
 #define M_PI 3.141592653589793238462643383279502884L
 
+// Funzione per convertire gli angoli in gradi in radianti
 inline double deg2rad(double d);
 
 PointCloud cloudPlaneCut(
@@ -84,7 +85,7 @@ PointCloud convertPointCloud(const std::vector<PointXYZ>& oldPointCloud);
 // Proietta una nuvola di punti 3D su un piano definito da origine e normale,
 // disegnando ogni punto proiettato come cerchio sull'immagine OpenCV.
 // Calcola automaticamente i bounds dalla nuvola stessa.
-void projectAndDrawPointCloud(
+void projectPointCloud(
     const cv::Mat&         image, 
     const PointCloud&      cloud, 
     const Eigen::Vector3d& origin, 
@@ -93,6 +94,23 @@ void projectAndDrawPointCloud(
     int                    img_width, 
     int                    img_height,
     cv::Scalar             color = cv::Scalar(255, 255, 255)
+);
+
+// Filtra la Point Cloud rimuovendo i punti che non hanno un numero minimo di vicini 
+// e che sono oltre una certa distanza dal centro della nuvola
+// funzione poco efficiente O(n^2), valutere se usare KD-Tree o toglierla se non fondamentale
+void filterPointCloud(
+    PointCloud& pointCloud, 
+    double      neighbor_radius, 
+    int         min_neighbors, 
+    double      max_distance
+);
+
+template <typename T>
+
+void checkPointCloud(
+    const std::vector<T>& cloud,
+    const std::string&    message = "[Debug] Point Cloud points: "
 );
 
 // Funzione per processare point cloud e convertirla in immagine
@@ -106,3 +124,4 @@ cv::Mat processPointCloud(
     std::vector<Vector3d> originCutPlanes,
     std::vector<Vector3d> inclinationCutPlanes
 );
+

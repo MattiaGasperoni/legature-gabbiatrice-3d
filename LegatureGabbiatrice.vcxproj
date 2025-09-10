@@ -125,13 +125,23 @@
   <ItemGroup>
     <ClCompile Include="BlobServerConfig.cpp" />
     <ClCompile Include="Config.cpp" />
+    <ClCompile Include="hough.cpp" />
+    <ClCompile Include="HoughAlgorithm.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="pointcloud.cpp" />
     <ClCompile Include="PointCloudProcessor.cpp" />
+    <ClCompile Include="sphere.cpp" />
     <ClCompile Include="vector3d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="hough.h" />
+    <ClInclude Include="HoughAlgorithm.h" />
+    <ClInclude Include="Matrix.h" />
+    <ClInclude Include="PointCloudProcessor.h" />
+    <ClInclude Include="sphere.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
