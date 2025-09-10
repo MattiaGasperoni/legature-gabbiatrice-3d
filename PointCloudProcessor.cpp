@@ -8,7 +8,6 @@
 #include "vector3d.h"
 #include "HoughAlgorithm.h"
 
-
 inline double deg2rad(double d)
 {
 	return d * M_PI / 180.0;
@@ -284,7 +283,7 @@ void checkPointCloud(const std::vector<T>& cloud, const std::string& message)
 	if (cloud.empty())
 	{
 		std::cerr << "[Error] The Point Cloud is empty" << std::endl;
-		std::exit(EXIT_FAILURE); // termina il programma
+		std::exit(EXIT_FAILURE);
 	}
 	else
 	{
@@ -307,6 +306,9 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 
 	checkPointCloud(pointCloud.points);
 
+	// Proietto la PointCloud sulla immagine 2D di OpenCV
+	projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
+
 	// Salviamo un istanza della PointCloud prima di Tagliarla
 	PointCloud pointCloud_preCut = pointCloud;
 
@@ -315,20 +317,21 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 
 	checkPointCloud(pointCloud.points, "[Debug] Point Cloud points post - plane cut: ");
 
-	// Proietto la PointCloud sulla immagine 2D di OpenCV
-    projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
-
 	// Hough per trovare i tornidi orizzontali
-	//PointCloud linesPointCloud = getLineSteelBarsPointCloud(pointCloud);
+	PointCloud remainingPoints;
+	std::vector<Line3D> houghLines = getLineSteelBars(pointCloud, remainingPoints);
+	std::cout << "Rilevate " << houghLines.size() << " rette" << "\n" << std::endl;
 
 	// Pulisco la PointCloud -> [ottenere i parametri via file]
-	filterPointCloud(pointCloud,9.0,25,195.0);
+	//filterPointCloud(remainingPoints,9.0,25,195.0);
 
-	// Hough per trovare i tornidi verticali
-	//PointCloud arcPointCloud = getArcSteelBarsPointCloud(pointCloud);
+	// Hough per trovare i tornidi non approsimabili a rette
+	std::vector<ArcPlane> houghArcs = getArcSteelBars(remainingPoints);
+	std::cout << "Rilevate " << houghArcs.size() << " semi circonferenze" << "\n" << std::endl;
 
 	// Calcolo e proiezione delle intersezioni
-	//projectIntersectionPoints(pointCloud_preCut, linesPointCloud, arcPointCloud);
+	std::vector<Vector3d> intersectionPoints = getIntersectionPoints(houghLines, houghArcs);
+	std::cout << "Rilevate " << intersectionPoints.size() << " intersezioni" << "\n" << std::endl;
 
     return otp_image;
 }

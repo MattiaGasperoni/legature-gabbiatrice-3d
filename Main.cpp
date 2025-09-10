@@ -141,16 +141,6 @@ runContinuousStreamingDemo(
     std::shared_ptr<VisionaryData>    pDataHandler = nullptr;
     std::unique_ptr<FrameGrabberBase> pFrameGrabber = nullptr;
 
-    //if (transportProtocol == "TCP")
-    //{
-    //    //-----------------------------------------------
-    //    // create a frame grabber suitable for the Visionary type used in visionaryControl
-    //    // tag::create_frame_grabber[]
-    //    pFrameGrabber = visionaryControl->createFrameGrabber();
-    //    pDataHandler  = visionaryControl->createDataHandler();
-    //    // end::create_frame_grabber[]
-    //}
-
     if (transportProtocol == "TCP")
     {
         std::shared_ptr<VisionaryData> pDataHandler     = visionaryControl->createDataHandler();
@@ -309,9 +299,140 @@ bool loadDataFromJSON(
     return true;
 }
 
+
+
+
+
+
+// Funzione helper per caricare la PointCloud
+PointCloud loadPointCloud(const std::string& filename, char delim, const char* outfile_name = nullptr, FILE** outfile_ptr = nullptr)
+{
+    // Apertura file di output se specificato
+    FILE* outfile = stdout;
+    if (outfile_name) {
+        int err = fopen_s(&outfile, outfile_name, "w");
+        if (err) {
+            throw std::runtime_error("Cannot open outfile '" + std::string(outfile_name) + "'!");
+        }
+    }
+    if (outfile_ptr) {
+        *outfile_ptr = outfile;
+    }
+
+    // Legge la PointCloud dal file
+    PointCloud X;
+    int errorcode = X.readFromFile(filename.c_str(), delim);
+    if (errorcode == 2) {
+        throw std::runtime_error("Wrong file format of infile '" + filename + "'!");
+    }
+    else if (errorcode != 0) {
+        throw std::runtime_error("Cannot read infile '" + filename + "'!");
+    }
+    if (X.points.size() < 2) {
+        throw std::runtime_error("Point cloud has less than two points");
+    }
+    return X;
+}
+
+int staticTest()
+{
+    //Parametri
+	PointCloud X;
+    std::vector<PointXYZ> cloud;
+
+    char opt_delim = ',';
+    char* outfile_name = NULL;
+
+    // Carica la PointCloud da file o da generatore
+    std::string filename = "Gabbiatrice.dat";
+
+
+    FILE* outfile = nullptr;
+    try
+    {
+        X = loadPointCloud(filename, opt_delim, outfile_name, &outfile);
+        // ora X contiene la point cloud caricata
+        // outfile contiene il file di output (stdout se non specificato)
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Errore: " << e.what() << std::endl;
+        return 1;
+    }
+
+    for(const auto& pt : X.points)
+    {
+        PointXYZ p;
+        p.x = static_cast<float>(pt.x);
+        p.y = static_cast<float>(pt.y);
+        p.z = static_cast<float>(pt.z);
+        cloud.push_back(p);
+	}
+
+    // Tagli per posizione (origine piani di taglio)
+    std::vector<Vector3d> originCutPlanes = {
+        Vector3d(187.899, 206.022, 789.286),
+        Vector3d(347.869, -13.978, 789.286)
+    };
+
+    // Tagli per inclinazione (normali dei piani)
+    std::vector<Vector3d> inclinationCutPlanes = {
+        Vector3d(360, 180.05, 270),
+        Vector3d(10, 270, 230)
+    };
+
+	Eigen::Vector3d origin(0.0, 400.0, 580.0);
+	Eigen::Vector3d normal(1.0, 1.0, 1.0);
+
+    int key = 0;
+    do 
+    {
+        // Processa e visualizza l'immagine
+        cv::Mat img = processPointCloud(
+            cloud,
+            640,
+            640,
+            origin,
+            normal,
+            1.0,
+            originCutPlanes,
+            inclinationCutPlanes
+        );
+
+        cv::imshow("finalAnnotatedImage", img);
+
+        std::cout << "Normal: [" << normal.x() << ", " << normal.y() << ", " << normal.z() << "]" << std::endl;
+        std::cout << "Usa i tasti W/S per Y, A/D per X, R/F per Z, q per uscire." << std::endl;
+
+        key = cv::waitKey(0); // Attende input dell'utente
+
+        // Modifica valori di normal in base al tasto premuto
+        switch (key) 
+        {
+            case 'w': normal.y() += 1.0; break;
+            case 's': normal.y() -= 1.0; break;
+            case 'a': normal.x() -= 1.0; break;
+            case 'd': normal.x() += 1.0; break;
+            case 'r': normal.z() += 1.0; break;
+            case 'f': normal.z() -= 1.0; break;
+            case 'q': std::cout << "Uscita..." << std::endl; break;
+            default: break;
+        }
+
+    } while (key != 'q');
+
+    cv::destroyAllWindows();
+}
+
+
+
 int
 main() 
 {
+    //
+	//  Parametri configurazione camera SICK 
+    // 
+    
     // Protocollo di trasporto usato per la comunicazione con il dispositivo
     std::string transportProtocol;
     // Indirizzo IP del sensore
@@ -329,13 +450,14 @@ main()
     // sensore da usare -> Visionary T-Mini
     visionary::VisionaryType visionaryType(visionary::VisionaryType::eVisionaryTMini);
 
-
+    //
     // Parametri per il processing delle Point cloud
+    //
 
+	// Scala per la proiezione sul piano
     double scale;
     // Piano di proiezione
     Eigen::Vector3d originPlaneProjection, normal;
-
     // Piani di taglio
     std::vector<Vector3d> originCutPlanes, inclinationCutPlanes;
 
@@ -346,17 +468,25 @@ main()
     std::cout << "=========================\n" << std::endl;
 
     // Legge i dati dal JSON
-    if (!loadDataFromJSON(transportProtocol, deviceIpAddr, receiverIp, storeData, filePrefix, streamingPort, cnt, visionaryType,
-        scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes))
+    /*if (!loadDataFromJSON
+    (
+        transportProtocol, deviceIpAddr, receiverIp, storeData, filePrefix, streamingPort, cnt, visionaryType,
+        scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
+    ))
     {
         return static_cast<int>(ExitCode::eParamError);
-    }
+    }*/
 
     ExitCode exitCode = ExitCode::eOk;
 
+    staticTest();
+
     // Inizia la trasmissione dei dati
-    exitCode = runContinuousStreamingDemo(visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
-        scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes);
+    //exitCode = runContinuousStreamingDemo
+    //(
+    //    visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
+    //    scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
+    //);
 
     std::cout << "exit code " << static_cast<int>(exitCode) << '\n';
 

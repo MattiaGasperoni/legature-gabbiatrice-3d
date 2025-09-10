@@ -4,10 +4,11 @@
 		<ClCompile>
 			<AdditionalIncludeDirectories>
 				C:\open3d\include;
+				C:\open3d\include\open3d\3rdparty;
+				C:\Users\mattia.gasperoni\source\repos\test-open3d\libs;
 				C:\Users\mattia.gasperoni\source\repos\test-libreria-hough\test-libreria-hough\libs;
 				C:\libs\eigen-3.4.0;
 				C:\Users\mattia.gasperoni\Desktop\libsDownload\vcpkg\installed\x64-windows\include\opencv4;
-				C:\open3d\include\open3d\3rdparty;
 				C:\Users\mattia.gasperoni\source\repos\LegatureGabbiatrice;
 				%(AdditionalIncludeDirectories)
 			</AdditionalIncludeDirectories>
@@ -15,9 +16,11 @@
 		<Link>
 			<AdditionalDependencies>
 				sick_visionary_cpp_base.lib;
+				Open3D.lib;
 				%(AdditionalDependencies)
 			</AdditionalDependencies>
 			<AdditionalLibraryDirectories>
+				C:\open3d\lib;
 				$(ProjectDir)lib;
 				%(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
