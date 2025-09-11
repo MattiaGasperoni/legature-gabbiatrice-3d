@@ -2,6 +2,8 @@
 //   Inclusione di librerie
 //
 #include <cstdlib>
+#include <cmath>
+#include <array>
 
 #include "PointCloudProcessor.h"
 #include "pointcloud.h"
@@ -154,7 +156,7 @@ void cutPointCloud(PointCloud& pointCloud, std::vector<Vector3d> originCutPlanes
 {
 	for (std::size_t i = 0; i < originCutPlanes.size(); ++i)
 	{
-		const auto& pt = originCutPlanes[i];
+		const auto& pt  = originCutPlanes[i];
 		const auto& inc = inclinationCutPlanes[i];
 
 		pointCloud = applyCutPlane(pointCloud, pt, inc.x, inc.y, inc.z);
@@ -176,8 +178,9 @@ void projectPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eige
 	Eigen::Vector3d arbitrary = std::abs(n.x()) < 0.9 ? Eigen::Vector3d::UnitX() : Eigen::Vector3d::UnitY();
 
 	// Costruisci i due assi del piano usando Gram-Schmidt
-	Eigen::Vector3d u_axis = (arbitrary - arbitrary.dot(n) * n).normalized();
-	Eigen::Vector3d v_axis = n.cross(u_axis).normalized();
+	Eigen::Vector3d v_axis = (arbitrary - arbitrary.dot(n) * n).normalized();
+	Eigen::Vector3d u_axis = n.cross(v_axis).normalized();
+
 
 	// Prima passata: trova i bounding box delle coordinate proiettate
 	double min_u = std::numeric_limits<double>::infinity();
@@ -224,7 +227,7 @@ void projectPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eige
 		// Mappa le coordinate del piano alle coordinate dell'immagine
 		// Normalizza u e v nell'intervallo [0, 1] e scala per le dimensioni dell'immagine
 		int x_img = static_cast<int>((1.0 - (u - min_u) / (max_u - min_u)) * (img_width - 1));
-		int y_img = static_cast<int>((1.0 - (v - min_v) / (max_v - min_v)) * (img_height - 1));
+		int y_img = static_cast<int>(((v - min_v) / (max_v - min_v)) * (img_height - 1));
 
 		if (x_img >= 0 && x_img < img_width && y_img >= 0 && y_img < img_height)
 		{
@@ -232,6 +235,84 @@ void projectPointCloud(const cv::Mat& image, const PointCloud& cloud, const Eige
 		}
 	}
 }
+
+void projectPointCloudBasedAnotherCloud(cv::Mat& image, const PointCloud& cloudToDraw, const PointCloud& cloudForBounds, const Eigen::Vector3d& origin, const Eigen::Vector3d& normal, double scale, int img_width, int img_height, cv::Scalar color = cv::Scalar(255, 255, 255), int radiusPoint = 1, int thicknessPoint = -1)
+{
+	if (cloudToDraw.points.empty())
+	{
+		std::cout << "[DEBUG - projectAndDrawPointCloud] No points to draw" << std::endl;
+		return;
+	}
+
+	if (cloudForBounds.points.empty())
+	{
+		std::cout << "[DEBUG - projectAndDrawPointCloud] No points for bounds calculation" << std::endl;
+		return;
+	}
+
+	Eigen::Vector3d n = normal.normalized();
+
+	// Costruisci base ortonormale nel piano
+	Eigen::Vector3d arbitrary = std::abs(n.x()) < 0.9 ? Eigen::Vector3d::UnitX() : Eigen::Vector3d::UnitY();
+	Eigen::Vector3d v_axis = (arbitrary - arbitrary.dot(n) * n).normalized();
+	Eigen::Vector3d u_axis = n.cross(v_axis).normalized();
+
+	// Prima passata: calcola i bounding box usando cloudForBounds
+	double min_u = std::numeric_limits<double>::infinity();
+	double max_u = -std::numeric_limits<double>::infinity();
+	double min_v = std::numeric_limits<double>::infinity();
+	double max_v = -std::numeric_limits<double>::infinity();
+
+	for (const auto& pt : cloudForBounds.points)
+	{
+		Eigen::Vector3d point(pt.x, pt.y, pt.z);
+		Eigen::Vector3d toPoint = point - origin;
+
+		// Proiezione ortogonale del punto sul piano
+		double distance = toPoint.dot(n);
+		Eigen::Vector3d proj = point - distance * n;
+
+		// Coordinate nella base (u, v) del piano
+		Eigen::Vector3d vec = proj - origin;
+		double u = vec.dot(u_axis);
+		double v = vec.dot(v_axis);
+
+		// Aggiorna bounding box
+		min_u = std::min(min_u, u);
+		max_u = std::max(max_u, u);
+		min_v = std::min(min_v, v);
+		max_v = std::max(max_v, v);
+	}
+
+	// Evita divisione per zero
+	if (max_u == min_u) max_u = min_u + 1.0;
+	if (max_v == min_v) max_v = min_v + 1.0;
+
+	// Seconda passata: proietta e disegna solo i punti di cloudToDraw
+	for (const auto& pt : cloudToDraw.points)
+	{
+		Eigen::Vector3d point(pt.x, pt.y, pt.z);
+		Eigen::Vector3d toPoint = point - origin;
+
+		// Proiezione ortogonale del punto sul piano
+		double distance = toPoint.dot(n);
+		Eigen::Vector3d proj = point - distance * n;
+
+		// Coordinate nella base (u, v) del piano
+		Eigen::Vector3d vec = proj - origin;
+		double u = vec.dot(u_axis);
+		double v = vec.dot(v_axis);
+
+		// Mappa le coordinate del piano alle coordinate dell'immagine usando i bounds calcolati
+		int x_img = static_cast<int>((1.0 - (u - min_u) / (max_u - min_u)) * (img_width - 1));
+		int y_img = static_cast<int>(((v - min_v) / (max_v - min_v)) * (img_height - 1));
+
+		if (x_img >= 0 && x_img < img_width && y_img >= 0 && y_img < img_height) {
+			cv::circle(image, cv::Point(x_img, y_img), radiusPoint, color, thicknessPoint);
+		}
+	}
+}
+
 
 void filterPointCloud(PointCloud& pointCloud, double neighbor_radius, int min_neighbors, double max_distance)
 {
@@ -294,6 +375,146 @@ void checkPointCloud(const std::vector<T>& cloud, const std::string& message)
 //
 // Funzione Principale
 //
+void projectPoint(const cv::Mat& image, const Eigen::Vector3d& origin, const Eigen::Vector3d& normal, double scale, int img_width, int img_height, cv::Scalar color, const Eigen::Vector3d& pointToHighlight)
+{
+	Eigen::Vector3d n = normal.normalized();
+
+	// Costruisci base ortonormale nel piano
+	// Scegli un vettore arbitrario non parallelo alla normale
+	Eigen::Vector3d arbitrary = std::abs(n.x()) < 0.9 ? Eigen::Vector3d::UnitX() : Eigen::Vector3d::UnitY();
+
+	// Costruisci i due assi del piano usando Gram-Schmidt
+	Eigen::Vector3d v_axis = (arbitrary - arbitrary.dot(n) * n).normalized();
+	Eigen::Vector3d u_axis = n.cross(v_axis).normalized();
+
+	// Proietta il punto da evidenziare sul piano
+	Eigen::Vector3d toHighlightPoint = pointToHighlight - origin;
+	double highlight_distance = toHighlightPoint.dot(n);
+	Eigen::Vector3d highlight_proj = pointToHighlight - highlight_distance * n;
+	Eigen::Vector3d highlight_vec = highlight_proj - origin;
+	double highlight_u = highlight_vec.dot(u_axis);
+	double highlight_v = highlight_vec.dot(v_axis);
+
+	// Per questa funzione semplificata, usiamo un sistema di coordinate centrato nell'origine
+	// e scalato dal parametro scale
+	double half_width = scale / 2.0;
+	double half_height = scale / 2.0;
+
+	// Mappa le coordinate del piano alle coordinate dell'immagine
+	int highlight_x_img = static_cast<int>((highlight_u + half_width) / scale * img_width);
+	int highlight_y_img = static_cast<int>((highlight_v + half_height) / scale * img_height);
+
+	// Disegna il punto evidenziato se è dentro i limiti dell'immagine
+	if (highlight_x_img >= 0 && highlight_x_img < img_width &&
+		highlight_y_img >= 0 && highlight_y_img < img_height)
+	{
+		cv::circle(image, cv::Point(highlight_x_img, highlight_y_img), 4, color, -1); // Cerchio principale
+		cv::circle(image, cv::Point(highlight_x_img, highlight_y_img), 4, cv::Scalar(0, 0, 0), 1); // Bordo nero per contrasto
+	}
+}
+
+
+void startPlaneCuttingSearch(PointCloud& cloud, Eigen::Vector3d& projectonPlaneOrigin, Eigen::Vector3d& projectonPlaneNormal, double scale, int img_width, int img_height)
+{
+	// Parametri iniziali
+	double pitch = 0.0, yaw = 0.0, roll = 0.0;
+	double _step = 0.01;
+	cv::Mat img;
+	char key = 0;
+
+	Eigen::Vector3d cutPlaneOrigin(187.899, 206.022, 789.286);
+
+	do
+	{
+		// Creazione immagine nera
+		img = cv::Mat(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
+
+		// Mostra la point cloud originale di bianco
+		projectPointCloud(img, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(255, 255, 255));
+
+		// Evidenzio l'origine del piano di taglio in giallo
+		projectPoint(img, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(0, 255, 255), cutPlaneOrigin);
+
+		// Creo un piano di taglio
+		std::array<Vector3d, 3> planePoints;
+		Vector3d converted_origin(cutPlaneOrigin.x(), cutPlaneOrigin.y(), cutPlaneOrigin.z());
+		planePoints = plane_points_from_anchor_and_euler(converted_origin, pitch, roll, yaw);
+		
+		// Taglio la PointCloud con il piano
+		PointCloud cuttedPointCloud = cloudPlaneCut(cloud, planePoints[0], planePoints[1], planePoints[2], true, false);
+
+		// Mostro la PointCloud tagliata di rosso
+		projectPointCloudBasedAnotherCloud(img, cuttedPointCloud, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(0, 0, 255));
+
+		// Visualizza immagine
+		cv::imshow("Plane Cutting View", img);
+
+		// Lettura input tastiera
+		key = cv::waitKey(10);
+
+		// Controllo spostamento origine
+		if (key == 'q') cutPlaneOrigin.x() += _step;
+		if (key == 'w') cutPlaneOrigin.x() -= _step;
+		if (key == 'a') cutPlaneOrigin.y() += _step;
+		if (key == 's') cutPlaneOrigin.y() -= _step;
+		if (key == 'z') cutPlaneOrigin.z() += _step;
+		if (key == 'x') cutPlaneOrigin.z() -= _step;
+
+		// Controllo step
+		if (key == 'p') { _step *= 10; std::cout << "step: " << _step << std::endl; }
+		if (key == 'o') { _step /= 10; std::cout << "step: " << _step << std::endl; }
+
+		// Reset origine
+		if (key == 'i') 
+		{
+			cutPlaneOrigin = Eigen::Vector3d(187.899, 206.022, 789.286);
+			pitch = yaw = roll = 0.0;
+		}
+
+		// Controllo rotazioni
+		if (key == 'j') pitch += _step;
+		if (key == 'k') yaw += _step;
+		if (key == 'l') roll += _step;
+		if (key == 'b') pitch -= _step;
+		if (key == 'n') yaw -= _step;
+		if (key == 'm') roll -= _step;
+
+		// Debug
+		std::cout << "Origin coordinates:"
+		<< " X="  << cutPlaneOrigin.x()
+		<< ", Y=" << cutPlaneOrigin.y()
+		<< ", Z=" << cutPlaneOrigin.z()
+		<< std::endl;
+		std::cout << "Inclinazione:"
+		<< " pitch=" << pitch
+		<< ", yaw=" <<  yaw
+		<< ", roll=" << roll << std::endl;
+
+	} while (key != 27);
+
+	cv::destroyAllWindows();
+}
+
+
+cv::Mat testProcessPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
+{
+	// Creazione immagine OpenCV nera
+	cv::Mat otp_image(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
+
+	checkPointCloud(cloud, "[Debug] Point Cloud points pre - conversion: ");
+
+	PointCloud pointCloud = convertPointCloud(cloud);
+
+	checkPointCloud(pointCloud.points);
+
+	// Proietto la PointCloud sulla immagine 2D di OpenCV
+	projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
+
+	startPlaneCuttingSearch(pointCloud, origin, normal, scale, img_width, img_height);
+
+	return otp_image;
+
+}
 
 cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale,std::vector<Vector3d> originCutPlanes,std::vector<Vector3d> inclinationCutPlanes)
 {

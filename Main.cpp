@@ -334,6 +334,7 @@ PointCloud loadPointCloud(const std::string& filename, char delim, const char* o
     return X;
 }
 
+// Funzione per testare il processing con una PointCloud caricata da file 
 int staticTest()
 {
     //Parametri
@@ -381,47 +382,25 @@ int staticTest()
         Vector3d(10, 270, 230)
     };
 
-	Eigen::Vector3d origin(0.0, 400.0, 580.0);
-	Eigen::Vector3d normal(1.0, 1.0, 1.0);
+	//Eigen::Vector3d origin(0.0, 400.0, 580.0);
+	Eigen::Vector3d origin(0.0, 0.0, 0.0);
+	Eigen::Vector3d normal(0.0, 0.0, 1.0);
 
-    int key = 0;
-    do 
-    {
-        // Processa e visualizza l'immagine
-        cv::Mat img = processPointCloud(
-            cloud,
-            640,
-            640,
-            origin,
-            normal,
-            1.0,
-            originCutPlanes,
-            inclinationCutPlanes
-        );
+    // Processa e visualizza l'immagine
+    cv::Mat img = testProcessPointCloud(
+        cloud,
+        640,
+        640,
+        origin,
+        normal,
+        1.0
+    );
 
-        cv::imshow("finalAnnotatedImage", img);
+    //cv::imshow("finalAnnotatedImage", img);
 
-        std::cout << "Normal: [" << normal.x() << ", " << normal.y() << ", " << normal.z() << "]" << std::endl;
-        std::cout << "Usa i tasti W/S per Y, A/D per X, R/F per Z, q per uscire." << std::endl;
+    //cv::waitKey(0);
 
-        key = cv::waitKey(0); // Attende input dell'utente
-
-        // Modifica valori di normal in base al tasto premuto
-        switch (key) 
-        {
-            case 'w': normal.y() += 1.0; break;
-            case 's': normal.y() -= 1.0; break;
-            case 'a': normal.x() -= 1.0; break;
-            case 'd': normal.x() += 1.0; break;
-            case 'r': normal.z() += 1.0; break;
-            case 'f': normal.z() -= 1.0; break;
-            case 'q': std::cout << "Uscita..." << std::endl; break;
-            default: break;
-        }
-
-    } while (key != 'q');
-
-    cv::destroyAllWindows();
+    //cv::destroyAllWindows();
 }
 
 
