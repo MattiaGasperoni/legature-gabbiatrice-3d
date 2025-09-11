@@ -372,14 +372,14 @@ int staticTest()
 
     // Tagli per posizione (origine piani di taglio)
     std::vector<Vector3d> originCutPlanes = {
-        Vector3d(187.899, 206.022, 789.286),
-        Vector3d(347.869, -13.978, 789.286)
+        Vector3d(197.899, -13.978,  789.286),   //Taglio punti laterali
+        Vector3d(187.899, 206.022,  789.286)
     };
 
     // Tagli per inclinazione (normali dei piani)
     std::vector<Vector3d> inclinationCutPlanes = {
-        Vector3d(360, 180.05, 270),
-        Vector3d(10, 270, 230)
+        Vector3d(40, 370, 0),
+        Vector3d(0,0,-89.97)
     };
 
 	//Eigen::Vector3d origin(0.0, 400.0, 580.0);
@@ -387,20 +387,31 @@ int staticTest()
 	Eigen::Vector3d normal(0.0, 0.0, 1.0);
 
     // Processa e visualizza l'immagine
-    cv::Mat img = testProcessPointCloud(
+    /*cv::Mat img = testProcessPointCloud(
         cloud,
         640,
         640,
         origin,
         normal,
         1.0
-    );
+    );*/
 
-    //cv::imshow("finalAnnotatedImage", img);
+    cv::Mat img = processPointCloud(
+        cloud,
+        640,
+        640,
+        origin,
+        normal,
+        1.0,
+        originCutPlanes,
+        inclinationCutPlanes
+	);
 
-    //cv::waitKey(0);
+    cv::imshow("finalAnnotatedImage", img);
 
-    //cv::destroyAllWindows();
+    cv::waitKey(0);
+
+    cv::destroyAllWindows();
 }
 
 

@@ -82,6 +82,24 @@ PointCloud applyCutPlane(
 // Converte la Point Cloud vector<PointXYZ> in PointCloud e rimuove i punti nan
 PointCloud convertPointCloud(const std::vector<PointXYZ>& oldPointCloud);
 
+// Utilizza una seconda nuvola per calcolare i bounds,
+// mantenendo proporzioni coerenti tra nuvole diverse.
+// Permette di impostare raggio e spessore del punto.
+void projectPointCloudBasedAnotherCloud(
+    cv::Mat& image,
+    const PointCloud& cloudToDraw,
+    const PointCloud& cloudForBounds,
+    const Eigen::Vector3d& origin,
+    const Eigen::Vector3d& normal,
+    double scale,
+    int img_width,
+    int img_height,
+    cv::Scalar color = cv::Scalar(255, 255, 255),
+    int radiusPoint = 1,
+    int thicknessPoint = -1
+);
+
+
 // Proietta una nuvola di punti 3D su un piano definito da origine e normale,
 // disegnando ogni punto proiettato come cerchio sull'immagine OpenCV.
 // Calcola automaticamente i bounds dalla nuvola stessa.
@@ -122,8 +140,6 @@ cv::Mat testProcessPointCloud(
     Eigen::Vector3d& normal,
     double scale
 );
-
-
 
 // Funzione per processare point cloud e convertirla in immagine
 cv::Mat processPointCloud(

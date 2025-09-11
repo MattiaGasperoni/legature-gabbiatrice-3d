@@ -12,7 +12,7 @@
 #include "hough.h"
 #include "Matrix.h"
 #include <memory>
-
+#include "PointCloudProcessor.h"
 
 //
 // Funzioni helper
@@ -218,34 +218,39 @@ static inline Eigen::Vector3d LiftFromPlane2D(const Eigen::Vector2d& p, const Pl
 
 std::vector<Line3D> getLineSteelBars(const PointCloud& cloud, PointCloud& remainingPoints)
 {
-    // Array delle linee trovate
     std::vector<Line3D> detectedLines;
-
-    // Copia della point cloud originale
     PointCloud X = cloud;
 
     // Parametri
-    double opt_minvotes = 0.1 * X.points.size();
-    double opt_dx       = 0.0;
-    int opt_nlines      = 0;
-    int granularity     = 4;
+    double opt_minvotes = 0.1 * X.points.size(); // almeno il 10% dei punti per accettare la linea
+    double opt_dx = 0.0;                   // risoluzione Hough
+    int opt_nlines = 0;                     // 0 = trova tutte le linee possibili
+    int granularity = 4;                     // granularità direzioni
     Vector3d minP, maxP, minPshifted, maxPshifted;
 
-    // Calcolo estensioni point cloud
+    // Calcolo bounding box della point cloud
     X.getMinMax3D(&minP, &maxP);
     double d = (maxP - minP).norm();
     if (d == 0.0)
     {
         fprintf(stderr, "Error: all points in point cloud identical\n");
-        // Popola remainingPoints con tutti i punti originali
         remainingPoints = cloud;
         return detectedLines;
     }
+
     X.getMinMax3D(&minPshifted, &maxPshifted);
 
-    // dimensione Hough space
+    // Calcolo risoluzione Hough
     if (opt_dx == 0.0)
+    {
         opt_dx = d / 64.0;
+    }
+    else if (opt_dx >= d)
+    {
+        fprintf(stderr, "Error: dx too large\n");
+        remainingPoints = cloud;
+        return detectedLines;
+    }
 
     std::unique_ptr<Hough> hough;
     try
@@ -255,46 +260,61 @@ std::vector<Line3D> getLineSteelBars(const PointCloud& cloud, PointCloud& remain
     catch (const std::exception& e)
     {
         fprintf(stderr, "Error: cannot allocate memory for Hough cells: %s\n", e.what());
-        // Popola remainingPoints con tutti i punti originali
         remainingPoints = cloud;
         return detectedLines;
     }
 
+    // Aggiungi punti al primo spazio di Hough
     hough->add(X);
 
-    // ciclo principale
-    PointCloud Y;
+    // Inizializza strutture temporanee
+    PointCloud Y;              // Punti vicini alla linea
     unsigned int nvotes;
     int nlines = 0;
+	double closeDistanceThreshold = d / 30.0; // Distanza massima per considerare un punto vicino alla linea
+
+
+    // Ciclo principale
     do
     {
-        Vector3d a, b;  // punto di ancoraggio e direzione
+        Vector3d a, b;  // punto e direzione linea
         hough->subtract(Y);
         nvotes = hough->getLine(&a, &b);
-        if (nvotes < (unsigned int)opt_minvotes) break;
 
-        // Estrai punti vicini alla linea candidata
-        X.pointsCloseToLine(a, b, opt_dx, &Y);
+        // Trova i punti vicini alla linea
+        //X.pointsCloseToLine(a, b, opt_dx, &Y);
+        X.pointsCloseToLine(a, b, closeDistanceThreshold, &Y);
+
+        // Prima stima ortogonale della linea
         double rc = orthogonal_LSQ(Y, &a, &b);
         if (rc == 0.0) break;
 
-        // Salva la linea rilevata
+        // Dopo il fit, aggiorna i voti
+        nvotes = Y.points.size();
+        if (nvotes < (unsigned int)opt_minvotes) break;
+
+        // Seconda stima per migliorare
+        rc = orthogonal_LSQ(Y, &a, &b);
+        if (rc == 0.0) break;
+
+        // Salva la linea
         Line3D line;
-        line.point     = a;
+        line.point = a;
         line.direction = b;
         detectedLines.push_back(line);
 
-        // Rimuovi punti utilizzati per evitare ri-rilevamenti
+        // Rimuovi i punti usati dalla point cloud
         X.removePoints(Y);
-        nlines++;
-    } 
-    while ((X.points.size() > 1) && ((opt_nlines == 0) || (opt_nlines > nlines)));
 
-    // Popola remainingPoints con i punti rimasti in X
+        nlines++;
+    } while ((X.points.size() > 1) && ((opt_nlines == 0) || (opt_nlines > nlines)));
+
+    // Assegna i punti rimanenti
     remainingPoints = X;
 
     return detectedLines;
 }
+
 
 std::vector<ArcPlane> getArcSteelBars(const PointCloud& pointCloud)
 {
