@@ -299,13 +299,12 @@ bool loadDataFromJSON(
     return true;
 }
 
-
-
-
-
-
 // Funzione helper per caricare la PointCloud
-PointCloud loadPointCloud(const std::string& filename, char delim, const char* outfile_name = nullptr, FILE** outfile_ptr = nullptr)
+PointCloud loadPointCloud(
+    const std::string& filename,
+    char delim, 
+    const char* outfile_name = nullptr,
+    FILE** outfile_ptr = nullptr)
 {
     // Apertura file di output se specificato
     FILE* outfile = stdout;
@@ -334,8 +333,61 @@ PointCloud loadPointCloud(const std::string& filename, char delim, const char* o
     return X;
 }
 
-// Funzione per testare il processing con una PointCloud caricata da file 
-int staticTest()
+
+
+// Funzione che fa partire la modilita per ottnere i piani di taglio 
+int cutTesting()
+{
+    //Parametri
+    PointCloud X;
+    std::vector<PointXYZ> cloud;
+
+    char opt_delim = ',';
+    char* outfile_name = NULL;
+
+    // Carica la PointCloud da file o da generatore
+    std::string filename = "Gabbiatrice.dat";
+
+
+    FILE* outfile = nullptr;
+    try
+    {
+        X = loadPointCloud(filename, opt_delim, outfile_name, &outfile);
+        // ora X contiene la point cloud caricata
+        // outfile contiene il file di output (stdout se non specificato)
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Errore: " << e.what() << std::endl;
+        return 1;
+    }
+
+    for (const auto& pt : X.points)
+    {
+        PointXYZ p;
+        p.x = static_cast<float>(pt.x);
+        p.y = static_cast<float>(pt.y);
+        p.z = static_cast<float>(pt.z);
+        cloud.push_back(p);
+    }
+
+    //Eigen::Vector3d origin(0.0, 400.0, 580.0);
+    Eigen::Vector3d origin(0.0, 0.0, 0.0);
+    Eigen::Vector3d normal(0.0, 0.0, 1.0);
+
+    // Processa e visualizza l'immagine
+    cv::Mat img = start3dPointCloudCut(
+        cloud,
+        640,
+        640,
+        origin,
+        normal,
+        1.0
+    );
+}
+
+// Elabora la point cloud e restituisce prima in 3D poi in due 2D i punti da legare
+int processPointCloudFromFile()
 {
     //Parametri
 	PointCloud X;
@@ -370,31 +422,21 @@ int staticTest()
         cloud.push_back(p);
 	}
 
-    // Tagli per posizione (origine piani di taglio)
+    // Origine dei piani di taglio
     std::vector<Vector3d> originCutPlanes = {
-        Vector3d(197.899, -13.978,  789.286),   //Taglio punti laterali
+        Vector3d(197.899, -13.978,  789.286),   
         Vector3d(187.899, 206.022,  789.286)
     };
 
-    // Tagli per inclinazione (normali dei piani)
+    // Inclinazioni dei piani di taglio
     std::vector<Vector3d> inclinationCutPlanes = {
         Vector3d(40, 370, 0),
         Vector3d(0,0,-89.97)
     };
 
-	//Eigen::Vector3d origin(0.0, 400.0, 580.0);
+    // Origine e normale del piano per la proiezione su Immgaine 2D
 	Eigen::Vector3d origin(0.0, 0.0, 0.0);
 	Eigen::Vector3d normal(0.0, 0.0, 1.0);
-
-    // Processa e visualizza l'immagine
-    /*cv::Mat img = testProcessPointCloud(
-        cloud,
-        640,
-        640,
-        origin,
-        normal,
-        1.0
-    );*/
 
     cv::Mat img = processPointCloud(
         cloud,
@@ -414,7 +456,47 @@ int staticTest()
     cv::destroyAllWindows();
 }
 
+// Tramite i 3 piani di taglio taglia la point cloud e mostra con una visualizzazione 3D
+// la testa della legatrice
+int getBinderPointCloud()
+{
+    //Parametri
+    PointCloud pointCloud;
 
+    char opt_delim = ',';
+    char* outfile_name = NULL;
+
+    // Carica la PointCloud da file o da generatore
+    std::string filename = "Gabbiatrice.dat";
+    FILE* outfile = nullptr;
+    try
+    {
+        pointCloud = loadPointCloud(filename, opt_delim, outfile_name, &outfile);
+        // ora pointCloud contiene la point cloud caricata
+        // outfile contiene il file di output (stdout se non specificato)
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Errore: " << e.what() << std::endl;
+        return 1;
+    }
+
+    // Tagli per ottenere la sagoma della Legatrice
+
+    std::vector<Vector3d> originCutPlanes = {
+        Vector3d(187.899, 206.022, 776.046),   //Taglio punti sotto la legatrice
+        Vector3d(187.899, 206.022, 2506.05),   //Taglio punti sopra la legatrice
+        Vector3d(187.899, 86.022, 824.946)     //Taglio punti laterali a destra
+    };
+
+    std::vector<Vector3d> inclinationCutPlanes = {
+        Vector3d(-30,-500,-70),
+        Vector3d(-80,100,-50),
+        Vector3d(-30,500,300),
+    };
+
+    show3dBinderPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
+}
 
 int
 main() 
@@ -469,7 +551,16 @@ main()
 
     ExitCode exitCode = ExitCode::eOk;
 
-    staticTest();
+
+    //
+    //  Funzioni
+    //
+
+    //cutTesting();
+
+    //processPointCloudFromFile();
+
+    getBinderPointCloud();
 
     // Inizia la trasmissione dei dati
     //exitCode = runContinuousStreamingDemo

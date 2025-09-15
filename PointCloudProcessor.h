@@ -131,15 +131,16 @@ void checkPointCloud(
     const std::string&    message = "[Debug] Point Cloud points: "
 );
 
-// Funzione per testare il processing delle Point cloud
-cv::Mat testProcessPointCloud(
-    const std::vector<PointXYZ>& cloud,
-    int img_width,
-    int img_height,
-    Eigen::Vector3d& origin,
-    Eigen::Vector3d& normal,
-    double scale
+
+// Funzione che restituisce la point cloud della testa legatrice
+void show3dBinderPointCloud(
+    PointCloud pointCloud,
+    std::vector<Vector3d> originCutPlanes,
+    std::vector<Vector3d> inclinationCutPlanes
 );
+
+// Funzione che fa avviare il taglio della pointcloud interattivo
+cv::Mat start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale);
 
 // Funzione per processare point cloud e convertirla in immagine
 cv::Mat processPointCloud(

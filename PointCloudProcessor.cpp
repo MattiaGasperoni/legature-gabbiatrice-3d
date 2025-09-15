@@ -489,42 +489,60 @@ void checkPointCloud(const std::vector<T>& cloud, const std::string& message)
 	}
 }
 
+// Funzione per utilizzare Drawgeometry di Open3D con le nostre PointCloud
+std::shared_ptr<open3d::geometry::PointCloud> MakePointCloud(PointCloud pcd, cv::Scalar color = cv::Scalar(255, 255, 255))
+{
+	auto cloud = std::make_shared<open3d::geometry::PointCloud>();
+	int npts = pcd.points.size();
+
+	cloud->points_.reserve(npts);
+	for (int i = 0; i < npts; ++i)
+	{
+		cloud->points_.push_back({ pcd.points[i].x,pcd.points[i].y ,pcd.points[i].z });
+	}
+
+
+	cloud->colors_.reserve(npts);
+	for (int i = 0; i < npts; ++i)
+	{
+		cloud->colors_.push_back({ color[2],color[1],color[0] });
+	}
+
+	return cloud;
+}
+
+
+
+
 void startPlaneCuttingSearch(PointCloud& cloud, Eigen::Vector3d& projectonPlaneOrigin, Eigen::Vector3d& projectonPlaneNormal, double scale, int img_width, int img_height)
 {
 	// Parametri iniziali
-	double pitch = 0.0, yaw = 0.0, roll = 0.0;
-	double _step = 0.01;
+	double pitch = -30, yaw = 500, roll = 70;
+	double _step = 0.1;
 	cv::Mat img;
 	char key = 0;
 
-	Eigen::Vector3d cutPlaneOrigin(187.899, 206.022, 789.286);
+	Eigen::Vector3d cutPlaneOrigin(187.899, 86.022, 824.946);
+	PointCloud cuttedPointCloud;
 
 	do
 	{
-		// Creazione immagine nera
 		img = cv::Mat(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
-		// Mostra la point cloud originale di bianco
 		projectPointCloud(img, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(255, 255, 255));
-
-		// Evidenzio l'origine del piano di taglio in giallo
 		projectPoint(img, cloud, projectonPlaneOrigin, projectonPlaneNormal, img_width, img_height, cutPlaneOrigin);
 
-		// Creo un piano di taglio
 		std::array<Vector3d, 3> planePoints;
 		Vector3d converted_origin(cutPlaneOrigin.x(), cutPlaneOrigin.y(), cutPlaneOrigin.z());
 		planePoints = plane_points_from_anchor_and_euler(converted_origin, pitch, roll, yaw);
 
-		// Taglio la PointCloud con il piano
-		PointCloud cuttedPointCloud = cloudPlaneCut(cloud, planePoints[0], planePoints[1], planePoints[2], true, false);
+		cuttedPointCloud = cloudPlaneCut(cloud, planePoints[0], planePoints[1], planePoints[2], false, false);
 
-		// Mostro la PointCloud tagliata di rosso
-		projectPointCloudBasedAnotherCloud(img, cuttedPointCloud, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(0, 0, 255));
+		// Visualizza i punti che teniamo in verde
+		projectPointCloudBasedAnotherCloud(img, cuttedPointCloud, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(0, 255, 0));
 
-		// Visualizza immagine
 		cv::imshow("Plane Cutting View", img);
 
-		// Lettura input tastiera
 		key = cv::waitKey(10);
 
 		// Controllo spostamento origine
@@ -535,18 +553,15 @@ void startPlaneCuttingSearch(PointCloud& cloud, Eigen::Vector3d& projectonPlaneO
 		if (key == 'z') cutPlaneOrigin.z() += _step;
 		if (key == 'x') cutPlaneOrigin.z() -= _step;
 
-		// Controllo step
 		if (key == 'p') { _step *= 10; std::cout << "step: " << _step << std::endl; }
 		if (key == 'o') { _step /= 10; std::cout << "step: " << _step << std::endl; }
 
-		// Reset origine
 		if (key == 'i')
 		{
-			cutPlaneOrigin = Eigen::Vector3d(187.899, 206.022, 789.286);
+			cutPlaneOrigin = Eigen::Vector3d(187.899, 206.022, 776.046);
 			pitch = yaw = roll = 0.0;
 		}
 
-		// Controllo rotazioni
 		if (key == 'j') pitch += _step;
 		if (key == 'k') yaw += _step;
 		if (key == 'l') roll += _step;
@@ -554,21 +569,36 @@ void startPlaneCuttingSearch(PointCloud& cloud, Eigen::Vector3d& projectonPlaneO
 		if (key == 'n') yaw -= _step;
 		if (key == 'm') roll -= _step;
 
-		// Debug
-		std::cout << "Origin coordinates:"
-			<< " X=" << cutPlaneOrigin.x()
+		std::cout << "Origin coordinates: X=" << cutPlaneOrigin.x()
 			<< ", Y=" << cutPlaneOrigin.y()
-			<< ", Z=" << cutPlaneOrigin.z()
-			<< std::endl;
-		std::cout << "Inclinazione:"
-			<< " pitch=" << pitch
-			<< ", yaw=" << yaw
-			<< ", roll=" << roll << std::endl;
+			<< ", Z=" << cutPlaneOrigin.z() << std::endl;
+		std::cout << "Inclinazione: pitch=" << pitch << ", yaw=" << yaw << ", roll=" << roll << std::endl;
 
 	} while (key != 27);
 
 	cv::destroyAllWindows();
+
+	//
+	// Visualizzazione con Open3D
+	//
+	//	Vector3d(187.899, 86.022, 824.946)     //Taglio punti laterali a destra
+	//};
+
+
+	//	Vector3d(-30,500,70),
+	//};
+
+	checkPointCloud(cuttedPointCloud.points, "\n[Debug] Point Cloud points post - plane cut: ");
+
+	std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geoms;
+
+	// Aggiungiamo alle nostre geometrie la PointCloud originale
+	geoms.push_back(MakePointCloud(cuttedPointCloud, cv::Scalar(0, 0, 0)));
+
+	// Visualizzatore 3D delle geometrie 
+	open3d::visualization::DrawGeometries(geoms);
 }
+
 
 PointCloud filterIntersection(
 	const PointCloud& intersectionPoints,  // punti di intersezione da filtrare
@@ -596,33 +626,35 @@ PointCloud filterIntersection(
 }
 
 
-// Funzione per utilizzare Drawgeometry di Open3D con le nostre PointCloud
-std::shared_ptr<open3d::geometry::PointCloud> MakePointCloud(PointCloud pcd, cv::Scalar color = cv::Scalar(255, 255, 255))
+//
+// Funzioni Principale
+//
+
+void show3dBinderPointCloud(PointCloud pointCloud,std::vector<Vector3d> originCutPlanes,std::vector<Vector3d> inclinationCutPlanes)
 {
-	auto cloud = std::make_shared<open3d::geometry::PointCloud>();
-	int npts = pcd.points.size();
+	cutPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
 
-	cloud->points_.reserve(npts);
-	for (int i = 0; i < npts; ++i)
-	{
-		cloud->points_.push_back({ pcd.points[i].x,pcd.points[i].y ,pcd.points[i].z });
-	}
+	double neighbor_radius = 5;
+	int min_neighbors = 20;
+	double max_distance = 12.0;
 
+	filterPointCloud(pointCloud, neighbor_radius, min_neighbors, max_distance);
 
-	cloud->colors_.reserve(npts);
-	for (int i = 0; i < npts; ++i)
-	{
-		cloud->colors_.push_back({ color[2],color[1],color[0] });
-	}
+	// Visualizzazione 3D con Open3D 
+	std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geoms; 
 
-	return cloud;
+	// Aggiungiamo alle nostre geometrie la PointCloud originale 
+	geoms.push_back(MakePointCloud(pointCloud, cv::Scalar(0, 0, 0))); 
+
+	// Visualizzatore 3D delle geometrie
+	open3d::visualization::DrawGeometries(geoms);
+
+	// SALVARE LA POINTCLOUD IN UN FILE DOPO AVERLA TAGLIATA E FILTRATA E VISUALIZZATA
+
 }
 
-//
-// Funzione Principale
-//
 
-cv::Mat testProcessPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
+cv::Mat start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
 {
 	// Creazione immagine OpenCV nera
 	cv::Mat otp_image(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -682,9 +714,11 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 			linesPointCloud.points.push_back(p);
 		}
 	}
-	// Proietto le rette trovate
+
+	// [Debug] Proietto le rette trovate
 	//projectPointCloudBasedAnotherCloud(otp_image, linesPointCloud, originalPointCloud, origin, normal, scale, img_width, img_height,cv::Scalar(0,0,255));
-	// Proietto i punti non vicini alle rette
+	
+	// [Debug] Proietto i punti non vicini alle rette
 	//projectPointCloudBasedAnotherCloud(otp_image, remainingPoints, originalPointCloud, origin, normal, scale, img_width, img_height,cv::Scalar(255,0,0));
 
 	// Pulisco la PointCloud
@@ -718,7 +752,7 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 		originalPointCloud,
 		origin, normal, scale,
 		img_width, img_height,
-		cv::Scalar(0, 255, 0),      // verde
+		cv::Scalar(0, 255, 0),       // verde
 		6, 4                         // parametri aggiuntivi (se li usi nella proiezione)
 	);
 
