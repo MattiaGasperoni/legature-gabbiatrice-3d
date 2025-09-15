@@ -4,12 +4,14 @@
 #include <cstdlib>
 #include <cmath>
 #include <array>
+
 #include "open3d/Open3D.h"
 
 #include "PointCloudProcessor.h"
 #include "pointcloud.h"
 #include "vector3d.h"
 #include "HoughAlgorithm.h"
+
 
 inline double deg2rad(double d)
 {
@@ -650,6 +652,15 @@ void show3dBinderPointCloud(PointCloud pointCloud,std::vector<Vector3d> originCu
 	open3d::visualization::DrawGeometries(geoms);
 
 	// SALVARE LA POINTCLOUD IN UN FILE DOPO AVERLA TAGLIATA E FILTRATA E VISUALIZZATA
+	auto cloud_ptr = MakePointCloud(pointCloud, cv::Scalar(0, 0, 0));
+	if (open3d::io::WritePointCloud("BordoLegatrice.pcd", *cloud_ptr))
+	{
+		std::cout << "PointCloud salvata con successo" << std::endl;
+	}
+	else
+	{
+		std::cerr << "Errore nel salvataggio della PointCloud!" << std::endl;
+	}
 
 }
 

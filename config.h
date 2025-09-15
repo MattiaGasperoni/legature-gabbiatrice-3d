@@ -6,9 +6,6 @@
 #include "vector3d.h"
 #include <Eigen/Dense>
 
-
-using json = nlohmann::json;
-
 // Struttura per i parametri della telecamera SICK/Visionary
 struct SickSettings
 {

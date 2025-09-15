@@ -116,6 +116,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +130,7 @@
     <ClCompile Include="hough.cpp" />
     <ClCompile Include="HoughAlgorithm.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Matching3D.cpp" />
     <ClCompile Include="pointcloud.cpp" />
     <ClCompile Include="PointCloudProcessor.cpp" />
     <ClCompile Include="sphere.cpp" />
@@ -139,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="hough.h" />
     <ClInclude Include="HoughAlgorithm.h" />
+    <ClInclude Include="Matching3D.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="PointCloudProcessor.h" />
     <ClInclude Include="sphere.h" />

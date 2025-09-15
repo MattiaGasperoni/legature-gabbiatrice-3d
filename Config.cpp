@@ -11,12 +11,12 @@ Config readJSON(const std::string& filename)
         throw std::runtime_error("Config file '" + filename + "' not found.");
     }
 
-    json j;
+    nlohmann::json j;
     try
     {
         file >> j;
     }
-    catch (const json::parse_error& e)
+    catch (const  nlohmann::json::parse_error& e)
     {
         throw std::runtime_error("Error parsing config.json: " + std::string(e.what()));
     }
@@ -30,7 +30,7 @@ Config readJSON(const std::string& filename)
 
     auto s = j["sick_settings"];
     cfg.sick_settings.transportProtocol = s.value("transportProtocol", "TCP");
-    cfg.sick_settings.deviceIpAddr = s.value("deviceIpAddr", "192.168.7.200");
+    cfg.sick_settings.deviceIpAddr      = s.value("deviceIpAddr", "192.168.7.200");
     cfg.sick_settings.receiverIp = s.value("receiverIp", "192.168.1.2");
     cfg.sick_settings.storeData = s.value("storeData", false);
     cfg.sick_settings.filePrefix = s.value("filePrefix", "");

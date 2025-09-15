@@ -1,9 +1,4 @@
 // =======================================================
-// Macro e definizioni
-// =======================================================
-#define _CRT_SECURE_NO_WARNINGS
-
-// =======================================================
 // Librerie standard C++
 // =======================================================
 #include <cinttypes>
@@ -33,6 +28,12 @@
 #include <VisionaryType.h>
 
 // =======================================================
+// Header VTK/PCL necessari per la visualizzazione
+// =======================================================
+#include <vtknlohmannjson.h>   // <---- Deve stare PRIMA di pcl/visualization
+#include <pcl/visualization/pcl_visualizer.h> // se usi PCL visualizer
+
+// =======================================================
 // Header locali del progetto
 // =======================================================
 #include "BlobServerConfig.h"
@@ -40,7 +41,7 @@
 #include "exitcodes.h"
 #include "Config.h"
 #include "PointCloudProcessor.h"
-
+//#include "Matching3D.h"  // se dà problemi, includilo più tardi
 
 // =======================================================
 // Framework esterni (Open3D, OpenCV)
@@ -53,6 +54,7 @@
 #pragma warning(pop)
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
+
 
 
 static ExitCode 
@@ -243,7 +245,8 @@ runContinuousStreamingDemo(
     return ExitCode::eOk;
 }
 
-bool loadDataFromJSON(
+bool 
+loadDataFromJSON(
     std::string& transportProtocol,
     std::string& deviceIpAddr,
     std::string& receiverIp,
@@ -300,7 +303,8 @@ bool loadDataFromJSON(
 }
 
 // Funzione helper per caricare la PointCloud
-PointCloud loadPointCloud(
+PointCloud
+loadPointCloud(
     const std::string& filename,
     char delim, 
     const char* outfile_name = nullptr,
@@ -333,7 +337,19 @@ PointCloud loadPointCloud(
     return X;
 }
 
+void 
+startSystemAlign()
+{
+    // Aquisisco un frame dalla camera
 
+    // Ottengo la point cloud di quel frame
+
+    // Uso l algoritmo di correspondence group sulla point cloud 
+
+    // Ottengo le matrici e altre info
+
+    // Ottengo il sistema di riferimento per inviare i comandi al PLC
+}
 
 // Funzione che fa partire la modilita per ottnere i piani di taglio 
 int cutTesting()
@@ -558,9 +574,9 @@ main()
 
     //cutTesting();
 
-    //processPointCloudFromFile();
+    processPointCloudFromFile();
 
-    getBinderPointCloud();
+    //getBinderPointCloud();
 
     // Inizia la trasmissione dei dati
     //exitCode = runContinuousStreamingDemo

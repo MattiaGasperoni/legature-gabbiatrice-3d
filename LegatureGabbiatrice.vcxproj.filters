@@ -42,6 +42,9 @@
     <ClCompile Include="sphere.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="Matching3D.cpp">
+      <Filter>File di origine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="config.json" />
@@ -60,6 +63,9 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="sphere.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Matching3D.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

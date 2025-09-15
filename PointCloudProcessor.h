@@ -42,8 +42,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 
-// Definizioni 
-#define M_PI 3.141592653589793238462643383279502884L
 
 // Funzione per convertire gli angoli in gradi in radianti
 inline double deg2rad(double d);

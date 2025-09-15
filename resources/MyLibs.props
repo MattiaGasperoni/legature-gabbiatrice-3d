@@ -2,7 +2,16 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<ItemDefinitionGroup>
 		<ClCompile>
+			<!-- Percorsi per gli header -->
 			<AdditionalIncludeDirectories>
+				C:\PCL 1.15.1\include\pcl-1.15;
+				C:\PCL 1.15.1\3rdParty\Boost\include\boost-1_87;
+				C:\PCL 1.15.1\3rdParty\Eigen\include\eigen3;
+				C:\PCL 1.15.1\3rdParty\FLANN\include;
+				C:\PCL 1.15.1\3rdParty\Qhull\include;
+				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4;
+				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4\vtklz4\lib; <!-- aggiunto -->
+				C:\PCL 1.15.1\3rdParty\OpenNI2\Include;
 				C:\open3d\include;
 				C:\open3d\include\open3d\3rdparty;
 				C:\Users\mattia.gasperoni\source\repos\test-open3d\libs;
@@ -12,14 +21,72 @@
 				C:\Users\mattia.gasperoni\source\repos\LegatureGabbiatrice;
 				%(AdditionalIncludeDirectories)
 			</AdditionalIncludeDirectories>
+			<PreprocessorDefinitions>
+				_SCL_SECURE_NO_WARNINGS;
+				_CRT_SECURE_NO_WARNINGS;
+				NOMINMAX;
+				%(PreprocessorDefinitions)
+			</PreprocessorDefinitions>
 		</ClCompile>
 		<Link>
 			<AdditionalDependencies>
 				sick_visionary_cpp_base.lib;
 				Open3D.lib;
+				pcl_common.lib;
+				pcl_io.lib;
+				pcl_io_ply.lib;
+				pcl_filters.lib;
+				pcl_features.lib;
+				pcl_kdtree.lib;
+				pcl_octree.lib;
+				pcl_search.lib;
+				pcl_sample_consensus.lib;
+				pcl_segmentation.lib;
+				pcl_surface.lib;
+				pcl_registration.lib;
+				pcl_recognition.lib;
+				pcl_visualization.lib;
+				pcl_ml.lib;
+				pcl_stereo.lib;
+				pcl_tracking.lib;
+				vtkCommonCore-9.4.lib;
+				vtkCommonDataModel-9.4.lib;
+				vtkCommonExecutionModel-9.4.lib;
+				vtkCommonMath-9.4.lib;
+				vtkCommonTransforms-9.4.lib;
+				vtkFiltersCore-9.4.lib;
+				vtkFiltersGeneral-9.4.lib;
+				vtkFiltersSources-9.4.lib;
+				vtkFiltersGeometry-9.4.lib;
+				vtkIOCore-9.4.lib;
+				vtkIOGeometry-9.4.lib;
+				vtkIOLegacy-9.4.lib;
+				vtkIOPLY-9.4.lib;
+				vtkInteractionStyle-9.4.lib;
+				vtkRenderingCore-9.4.lib;
+				vtkRenderingLOD-9.4.lib;
+				vtkRenderingOpenGL2-9.4.lib;
+				vtksys-9.4.lib;
+				vtkzlib-9.4.lib;
+				vtklz4-9.4.lib;
+				vtkCommonSystem-9.4.lib;
+				vtkCommonMisc-9.4.lib;
+				vtkIOImage-9.4.lib;
+				vtkjpeg-9.4.lib;
+				vtkpng-9.4.lib;
+				vtktiff-9.4.lib;
+				flann_cpp.lib;
+				flann_cpp_s.lib;
+				qhullstatic.lib;
+				qhullstatic_r.lib;
 				%(AdditionalDependencies)
 			</AdditionalDependencies>
 			<AdditionalLibraryDirectories>
+				C:\PCL 1.15.1\lib;
+				C:\PCL 1.15.1\3rdParty\Boost\lib;
+				C:\PCL 1.15.1\3rdParty\VTK\lib;
+				C:\PCL 1.15.1\3rdParty\FLANN\lib;
+				C:\PCL 1.15.1\3rdParty\Qhull\lib;
 				C:\open3d\lib;
 				$(ProjectDir)lib;
 				%(AdditionalLibraryDirectories)
