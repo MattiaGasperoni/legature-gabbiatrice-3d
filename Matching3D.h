@@ -20,9 +20,5 @@ typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;
 typedef pcl::SHOT352 DescriptorType;
 
-void
-startMatching3D(
-	pcl::PointCloud<pcl::PointXYZ>::Ptr scene,
-	pcl::PointCloud<pcl::PointXYZ>::Ptr model,
-	Eigen::Matrix3f&                transformation_matrix
-);
+// Matching 3Dd debug con un file model e scene già impostati
+void startMatching3D(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& translation_vector);

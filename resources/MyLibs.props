@@ -10,8 +10,10 @@
 				C:\PCL 1.15.1\3rdParty\FLANN\include;
 				C:\PCL 1.15.1\3rdParty\Qhull\include;
 				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4;
-				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4\vtklz4\lib; <!-- aggiunto -->
+				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4\vtklz4\lib;
 				C:\PCL 1.15.1\3rdParty\OpenNI2\Include;
+				C:\Program Files\OpenNI2\Tools;
+				C:\Program Files\OpenNI2\Samples\Bin; 
 				C:\open3d\include;
 				C:\open3d\include\open3d\3rdparty;
 				C:\Users\mattia.gasperoni\source\repos\test-open3d\libs;

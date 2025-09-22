@@ -17,65 +17,70 @@
 #include <pcl/common/common.h>
 
 
+std::string model_filename_ = "milk.pcd";
+std::string scene_filename_ = "milk_cartoon_all_small_clorox.pcd";
 
-void
-startMatching3D(pcl::PointCloud<pcl::PointXYZ>::Ptr scene, pcl::PointCloud<pcl::PointXYZ>::Ptr model, Eigen::Matrix3f& transformation_matrix)
+//Algorithm params
+bool use_hough_(false); // Usiamo Geometric Consistency
+float model_ss_(0.01f);
+float scene_ss_(0.03f);
+float rf_rad_(0.015f);
+float descr_rad_(0.02f);
+float cg_size_(0.01f);
+float cg_thresh_(5.0f);
+
+void startMatching3D(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& translation_vector)
 {
+	pcl::PointCloud<PointType>::Ptr      model(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr      scene(new pcl::PointCloud<PointType>());
+
 	pcl::PointCloud<PointType>::Ptr      model_keypoints(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<PointType>::Ptr      scene_keypoints(new pcl::PointCloud<PointType>());
+
 	pcl::PointCloud<NormalType>::Ptr     model_normals(new pcl::PointCloud<NormalType>());
 	pcl::PointCloud<NormalType>::Ptr     scene_normals(new pcl::PointCloud<NormalType>());
+
 	pcl::PointCloud<DescriptorType>::Ptr model_descriptors(new pcl::PointCloud<DescriptorType>());
 	pcl::PointCloud<DescriptorType>::Ptr scene_descriptors(new pcl::PointCloud<DescriptorType>());
 
 	//
 	//  Carico le point cloud
 	//
-	std::string model_filename_ = "Gabbiatrice.pcd";
+	scene_filename_ = "Gabbiatrice.pcd";
+	model_filename_ = "BordoLegatriceRandom.pcd";
 	if (pcl::io::loadPCDFile(model_filename_, *model) < 0)
 	{
 		std::cout << "Error loading model cloud." << std::endl;
 	}
-	std::cout << "Model caricato,punti: " << model->size() << std::endl;
-	std::string scene_filename_ = "BordoLegatrice.pcd";
+	std::cout << "Model caricato; punti: " << model->size() << std::endl;
 	if (pcl::io::loadPCDFile(scene_filename_, *scene) < 0)
 	{
 		std::cout << "Error loading scene cloud." << std::endl;
 	}
-	std::cout << "Scena caricata,punti: " << scene->size() << std::endl;
+	std::cout << "Scena caricata; punti: " << scene->size() << std::endl;
 
-
+	//
 	// Calcola la diagonale per scalare il raggio di campionamento
+	//
 	Eigen::Vector4f min_pt, max_pt;
 	pcl::getMinMax3D(*model, min_pt, max_pt);
-
 	float dx = max_pt.x() - min_pt.x();
 	float dy = max_pt.y() - min_pt.y();
 	float dz = max_pt.z() - min_pt.z();
-
 	float model_diag = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-	// Downsample del modello
-	pcl::PointCloud<PointType>::Ptr model_downsampled(new pcl::PointCloud<PointType>());
-	pcl::UniformSampling<PointType> us;
-	us.setInputCloud(model);
-	us.setRadiusSearch(model_diag * 0.005f); // raggio campionamento ~0.5% della diagonale
-	us.filter(*model_downsampled);
-	*model = *model_downsampled;
-
-	// Parametri
-	bool  use_hough_(false);
-	float model_ss_(model_diag * 0.01f);
-	float scene_ss_(model_diag * 0.015f);
-	float rf_rad_(model_diag * 0.07f);
-	float descr_rad_(model_diag * 0.15f);
-	float cg_size_(model_diag * 0.07f);
-	float cg_thresh_(100);
-	float max_descriptor_distance(0.15f);
-
+	//
+	// Parametri dell'algoritmo basati sulla diagonale del model
+	//
+	model_ss_  = model_diag * 0.01f;
+	scene_ss_  = model_diag * 0.015f;
+	rf_rad_    = model_diag * 0.07f;
+	descr_rad_ = model_diag * 0.15f;
+	cg_size_   = model_diag * 0.07f;
+	cg_thresh_ = 100;
 
 	//
-	//  Compute Normals
+	//  Calcola le normali delle point cloud
 	//
 	pcl::NormalEstimationOMP<PointType, NormalType> norm_est;
 	norm_est.setKSearch(10);
@@ -86,18 +91,19 @@ startMatching3D(pcl::PointCloud<pcl::PointXYZ>::Ptr scene, pcl::PointCloud<pcl::
 	norm_est.compute(*scene_normals);
 
 	//
-	//  Downsample Clouds to Extract keypoints
+	//  Downsample sulle nuvole di punti per estrarre i keypoints
 	//
 	pcl::UniformSampling<PointType> uniform_sampling;
 	uniform_sampling.setInputCloud(model);
 	uniform_sampling.setRadiusSearch(model_ss_);
 	uniform_sampling.filter(*model_keypoints);
-	std::cout << "Model selected Keypoints: " << model_keypoints->size() << std::endl;
+	std::cout << "\nModel selected Keypoints: " << model_keypoints->size() << std::endl;
 
 	uniform_sampling.setInputCloud(scene);
 	uniform_sampling.setRadiusSearch(scene_ss_);
 	uniform_sampling.filter(*scene_keypoints);
 	std::cout << "Scene selected Keypoints: " << scene_keypoints->size() << std::endl;
+
 
 	//
 	//  Compute Descriptor for keypoints
@@ -147,7 +153,7 @@ startMatching3D(pcl::PointCloud<pcl::PointXYZ>::Ptr scene, pcl::PointCloud<pcl::
 	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > rototranslations;
 	std::vector<pcl::Correspondences> clustered_corrs;
 
-	//  Using geometric consistency clustering algorithm 
+	// Using GeometricConsistency Algorithm
 	if (!use_hough_)
 	{
 		pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
@@ -172,21 +178,14 @@ startMatching3D(pcl::PointCloud<pcl::PointXYZ>::Ptr scene, pcl::PointCloud<pcl::
 		std::cout << "        Correspondences belonging to this instance: " << clustered_corrs[i].size() << std::endl;
 
 		// Print the rotation matrix and translation vector
-		transformation_matrix       = rototranslations[i].block<3, 3>(0, 0);
-		Eigen::Vector3f translation = rototranslations[i].block<3, 1>(0, 3);
-
-		printf("\n");
-		printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(0, 0), transformation_matrix(0, 1), transformation_matrix(0, 2));
-		printf("        R = | %6.3f %6.3f %6.3f | \n", transformation_matrix(1, 0), transformation_matrix(1, 1), transformation_matrix(1, 2));
-		printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(2, 0), transformation_matrix(2, 1), transformation_matrix(2, 2));
-		printf("\n");
-		printf("        t = < %0.3f, %0.3f, %0.3f >\n", translation(0), translation(1), translation(2));
+		transformation_matrix = rototranslations[i].block<3, 3>(0, 0);
+		translation_vector    = rototranslations[i].block<3, 1>(0, 3);
 	}
 
 	//
 	//  Visualization
 	//
-	/*pcl::visualization::PCLVisualizer viewer("Correspondence Grouping");
+	pcl::visualization::PCLVisualizer viewer("Correspondence Grouping");
 	viewer.addPointCloud(scene, "scene_cloud");
 
 	pcl::PointCloud<PointType>::Ptr off_scene_model(new pcl::PointCloud<PointType>());
@@ -207,5 +206,5 @@ startMatching3D(pcl::PointCloud<pcl::PointXYZ>::Ptr scene, pcl::PointCloud<pcl::
 	while (!viewer.wasStopped())
 	{
 		viewer.spinOnce();
-	}*/
+	}
 }

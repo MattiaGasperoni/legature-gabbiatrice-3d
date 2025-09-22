@@ -694,7 +694,7 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 
     PointCloud pointCloud = convertPointCloud(cloud);
 
-	checkPointCloud(pointCloud.points);
+	checkPointCloud(pointCloud.points, "[Debug] Point Cloud points post - conversion: ");
 
 	// [Debug] Proietto la PointCloud originale
 	projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
@@ -729,22 +729,21 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 	// [Debug] Proietto le rette trovate
 	//projectPointCloudBasedAnotherCloud(otp_image, linesPointCloud, originalPointCloud, origin, normal, scale, img_width, img_height,cv::Scalar(0,0,255));
 	
-	// [Debug] Proietto i punti non vicini alle rette
+	// [Debug] Proietto i punti rimasti, non utilizzati per il rilevamento delle rette
 	//projectPointCloudBasedAnotherCloud(otp_image, remainingPoints, originalPointCloud, origin, normal, scale, img_width, img_height,cv::Scalar(255,0,0));
 
-	// Pulisco la PointCloud
+	// Pulisco la PointCloud da eventuali punti isolati o troppo lontani
 	//filterPointCloud(remainingPoints,4.0,56,15.0);
 
 	// [Debug] Proietto i punti rimasti dopo la pulizia
 	//projectPointCloudBasedAnotherCloud(otp_image, remainingPoints, originalPointCloud, origin, normal, scale, img_width, img_height);
 
-	// Hough per trovare i tondini non approsimabili a rette
+	// Applico l'algoritmo di Hough per trovare gli archi
 	std::vector<ArcPlane> houghArcs = getArcSteelBars(remainingPoints);
 	std::cout << "Rilevate " << houghArcs.size() << " semi circonferenze" << "\n" << std::endl;
 
 	// Calcolo e proiezione delle intersezioni
 	std::vector<Vector3d> intersectionPoints = getIntersectionPoints(houghLines, houghArcs);
-	std::cout << "Rilevate " << intersectionPoints.size() << " intersezioni" << "\n" << std::endl;
 
 	// Trasforma intersectionPoints in PointCloud
 	PointCloud intersectionCloud;
@@ -756,6 +755,8 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 	int min_neighbors = 4;        // numero minimo di punti per conservare l'intersezione
 	PointCloud filteredIntersection = filterIntersection(intersectionCloud, originalPointCloud, neighbor_radius, min_neighbors);
 
+	std::cout << "Rilevate " << filteredIntersection.points.size() << " intersezioni" << "\n" << std::endl;
+
 	// Proietta i punti filtrati
 	projectPointCloudBasedAnotherCloud(
 		otp_image,
@@ -763,8 +764,8 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 		originalPointCloud,
 		origin, normal, scale,
 		img_width, img_height,
-		cv::Scalar(0, 255, 0),       // verde
-		6, 4                         // parametri aggiuntivi (se li usi nella proiezione)
+		cv::Scalar(0, 255, 0),       
+		6, 4                        
 	);
 
 

@@ -28,12 +28,6 @@
 #include <VisionaryType.h>
 
 // =======================================================
-// Header VTK/PCL necessari per la visualizzazione
-// =======================================================
-#include <vtknlohmannjson.h>   // <---- Deve stare PRIMA di pcl/visualization
-#include <pcl/visualization/pcl_visualizer.h> // se usi PCL visualizer
-
-// =======================================================
 // Header locali del progetto
 // =======================================================
 #include "BlobServerConfig.h"
@@ -41,7 +35,7 @@
 #include "exitcodes.h"
 #include "Config.h"
 #include "PointCloudProcessor.h"
-//#include "Matching3D.h"  // se dà problemi, includilo più tardi
+#include "Matching3D.h"  // dà problemi con le lib
 
 // =======================================================
 // Framework esterni (Open3D, OpenCV)
@@ -472,8 +466,7 @@ int processPointCloudFromFile()
     cv::destroyAllWindows();
 }
 
-// Tramite i 3 piani di taglio taglia la point cloud e mostra con una visualizzazione 3D
-// la testa della legatrice
+// Tramite i 3 piani di taglio taglia la point cloud e mostra con una visualizzazione 3D la testa della legatrice
 int getBinderPointCloud()
 {
     //Parametri
@@ -512,6 +505,22 @@ int getBinderPointCloud()
     };
 
     show3dBinderPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
+}
+
+void findBinderHead()
+{
+    Eigen::Matrix3f transformation_matrix;
+    Eigen::Vector3f translation_vector;
+
+    startMatching3D(transformation_matrix, translation_vector);
+
+    printf("\n");
+    printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(0, 0), transformation_matrix(0, 1), transformation_matrix(0, 2));
+    printf("        R = | %6.3f %6.3f %6.3f | \n", transformation_matrix(1, 0), transformation_matrix(1, 1), transformation_matrix(1, 2));
+    printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(2, 0), transformation_matrix(2, 1), transformation_matrix(2, 2));
+    printf("\n");
+    printf("        t = < %0.3f, %0.3f, %0.3f >\n", translation_vector(0), translation_vector(1), translation_vector(2));
+
 }
 
 int
@@ -572,9 +581,11 @@ main()
     //  Funzioni
     //
 
+    findBinderHead();
+    
     //cutTesting();
 
-    processPointCloudFromFile();
+    //processPointCloudFromFile();
 
     //getBinderPointCloud();
 
