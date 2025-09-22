@@ -1,273 +1,303 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Definizione dei filtri -->
   <ItemGroup>
-    <Filter Include="File di origine">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D2E4F220-03A6-4B12-A1B7-6C8A5E5D2B2D}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx</Extensions>
     </Filter>
-    <Filter Include="File di intestazione">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{44F9DA6F-6B5F-4A3F-A5B1-33481C1EDBF1}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx</Extensions>
     </Filter>
-    <Filter Include="File di risorse">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Data">
+      <UniqueIdentifier>{E848AF0C-6A31-4FD3-8573-ABF19E88C965}</UniqueIdentifier>
+      <Extensions>pcd;ply;dat</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{B5A88678-12C4-42D3-AE02-EBD0D4EFBF10}</UniqueIdentifier>
+      <Extensions>json;props</Extensions>
     </Filter>
   </ItemGroup>
+  <!-- File principale -->
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <!-- Associazione file sorgente -->
+  <ItemGroup>
     <ClCompile Include="src\AuthenticationLegacy.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\AuthenticationSecure.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\BlobServerConfig.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLa2ProtocolHandler.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLaBProtocolHandler.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLaCommand.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLaError.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLaParameterReader.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CoLaParameterWriter.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Config.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ControlSession.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\FrameGrabberBase.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\framewrite.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\hough.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\HoughAlgorithm.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Matching3D.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\NetLink.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\pamwrite.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\pngwrite.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\pointcloud.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PointCloudPlyWriter.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PointCloudProcessor.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\sphere.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TcpSocket.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UdpParsing.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\UdpSocket.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\vector3d.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryAutoIP.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryControl.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryData.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryDataStream.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionarySData.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryTMiniData.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VisionaryType.cpp">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\spng.c">
-      <Filter>File di origine</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TcpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpParsing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UdpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vector3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryAutoIP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryDataStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionarySData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryTMiniData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VisionaryType.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <!-- Associazione file header -->
   <ItemGroup>
     <ClInclude Include="include\AuthenticationLegacy.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\AuthenticationSecure.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\BlobServerConfig.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLa2ProtocolHandler.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaBProtocolHandler.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaCommand.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaCommandType.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaError.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaParameterReader.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CoLaParameterWriter.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\config.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ControlSession.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\exitcodes.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\FrameGrabber.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\FrameGrabberBase.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\framewrite.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\hough.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\HoughAlgorithm.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\IAuthentication.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\IProtocolHandler.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ITransport.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Matching3D.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Matrix.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\MD5.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\NetLink.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\NumericConv.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\pamwrite.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\pngwrite.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\pointcloud.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\PointCloudPlyWriter.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\PointCloudProcessor.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\PointXYZ.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\SHA256.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\SockRecord.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\sphere.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\spng.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\TcpSocket.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\UdpParsing.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\UdpSocket.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\vector3d.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryAutoIP.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryControl.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryData.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryDataStream.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryEndian.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionarySData.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryTMiniData.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\VisionaryType.h">
-      <Filter>File di intestazione</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\BordoLegatrice.pcd">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\BordoLegatriceRandom.pcd">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\Gabbiatrice.dat">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="data\Gabbiatrice.pcd">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="resources\MyLibs.props">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="resources\config.json">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <!-- File di dati (aggiungi qui i tuoi file .pcd, .json, etc.) -->
+  <!-- File di risorse/build (aggiungi qui i tuoi file .props, readme, etc.) -->
 </Project>

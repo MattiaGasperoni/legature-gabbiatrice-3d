@@ -213,6 +213,14 @@
     <ClInclude Include="include\VisionaryTMiniData.h" />
     <ClInclude Include="include\VisionaryType.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\BordoLegatrice.pcd" />
+    <None Include="data\BordoLegatriceRandom.pcd" />
+    <None Include="data\Gabbiatrice.dat" />
+    <None Include="data\Gabbiatrice.pcd" />
+    <None Include="resources\config.json" />
+    <None Include="resources\MyLibs.props" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
