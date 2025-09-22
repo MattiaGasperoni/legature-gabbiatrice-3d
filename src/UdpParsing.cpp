@@ -1,10 +1,10 @@
-#include "UdpParsing.h"
+#include "include/UdpParsing.h"
 #include <iostream>
 #include <map>
 #include <vector>
 
-#include <sick_visionary_cpp_base/ITransport.h>
-#include <sick_visionary_cpp_base/VisionaryEndian.h>
+#include <include/ITransport.h>
+#include <include/VisionaryEndian.h>
 
 namespace visionary {
 ITransport::ByteBuffer reassembleFragments(const std::map<std::uint16_t, ITransport::ByteBuffer>& fragmentMap)

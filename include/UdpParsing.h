@@ -2,8 +2,8 @@
 #include <memory>
 #include <vector>
 
-#include <ITransport.h>
-#include <VisionaryData.h>
+#include <include/ITransport.h>
+#include <include/VisionaryData.h>
 
 namespace visionary {
 ITransport::ByteBuffer reassembleFragments(const std::map<std::uint16_t, ITransport::ByteBuffer>& fragmentMap);

@@ -1,4 +1,4 @@
-#include "Matching3D.h"
+#include "include/Matching3D.h"
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/correspondence.h>
@@ -17,8 +17,8 @@
 #include <pcl/common/common.h>
 
 
-std::string model_filename_ = "milk.pcd";
-std::string scene_filename_ = "milk_cartoon_all_small_clorox.pcd";
+std::string model_filename_ = "data/milk.pcd";
+std::string scene_filename_ = "data/Gmilk_cartoon_all_small_clorox.pcd";
 
 //Algorithm params
 bool use_hough_(false); // Usiamo Geometric Consistency
@@ -46,8 +46,8 @@ void startMatching3D(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& tr
 	//
 	//  Carico le point cloud
 	//
-	scene_filename_ = "Gabbiatrice.pcd";
-	model_filename_ = "BordoLegatriceRandom.pcd";
+	scene_filename_ = "data/Gabbiatrice.pcd";
+	model_filename_ = "data/BordoLegatriceRandom.pcd";
 	if (pcl::io::loadPCDFile(model_filename_, *model) < 0)
 	{
 		std::cout << "Error loading model cloud." << std::endl;

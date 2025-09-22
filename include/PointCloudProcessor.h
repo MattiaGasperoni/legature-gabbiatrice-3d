@@ -18,16 +18,16 @@
 // =======================================================
 // SDK / Librerie hardware specifiche
 // =======================================================
-#include <PointXYZ.h>
+#include <include/PointXYZ.h>
 
 // =======================================================
 // Header locali del progetto
 // =======================================================
-#include "BlobServerConfig.h"
-#include "UdpParsing.h"
-#include "exitcodes.h"
-#include "Config.h"
-#include "pointcloud.h"
+#include "include/BlobServerConfig.h"
+#include "include/UdpParsing.h"
+#include "include/exitcodes.h"
+#include "include/Config.h"
+#include "include/pointcloud.h"
 
 
 // =======================================================
@@ -130,7 +130,7 @@ void checkPointCloud(
 );
 
 
-// Funzione che restituisce la point cloud della testa legatrice
+// Funzione che restituisce la point cloud della testa legatrice e la salva su file
 void show3dBinderPointCloud(
     PointCloud pointCloud,
     std::vector<Vector3d> originCutPlanes,

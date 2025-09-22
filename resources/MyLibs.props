@@ -13,7 +13,7 @@
 				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4\vtklz4\lib;
 				C:\PCL 1.15.1\3rdParty\OpenNI2\Include;
 				C:\Program Files\OpenNI2\Tools;
-				C:\Program Files\OpenNI2\Samples\Bin; 
+				C:\Program Files\OpenNI2\Samples\Bin;
 				C:\open3d\include;
 				C:\open3d\include\open3d\3rdparty;
 				C:\Users\mattia.gasperoni\source\repos\test-open3d\libs;
@@ -21,6 +21,7 @@
 				C:\libs\eigen-3.4.0;
 				C:\Users\mattia.gasperoni\Desktop\libsDownload\vcpkg\installed\x64-windows\include\opencv4;
 				C:\Users\mattia.gasperoni\source\repos\LegatureGabbiatrice;
+				$(ProjectDir)include;
 				%(AdditionalIncludeDirectories)
 			</AdditionalIncludeDirectories>
 			<PreprocessorDefinitions>

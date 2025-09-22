@@ -20,22 +20,22 @@
 // =======================================================
 // SDK / Librerie hardware specifiche
 // =======================================================
-#include <FrameGrabber.h>
-#include <NetLink.h>
-#include <PointCloudPlyWriter.h>
-#include <PointXYZ.h>
-#include <VisionaryControl.h>
-#include <VisionaryType.h>
+#include <include/FrameGrabber.h>
+#include <include/NetLink.h>
+#include <include/PointCloudPlyWriter.h>
+#include <include/PointXYZ.h>
+#include <include/VisionaryControl.h>
+#include <include/VisionaryType.h>
 
 // =======================================================
 // Header locali del progetto
 // =======================================================
-#include "BlobServerConfig.h"
-#include "UdpParsing.h"
-#include "exitcodes.h"
-#include "Config.h"
-#include "PointCloudProcessor.h"
-#include "Matching3D.h"  // dà problemi con le lib
+#include "include/BlobServerConfig.h"
+#include "include/UdpParsing.h"
+#include "include/exitcodes.h"
+#include "include/Config.h"
+#include "include/PointCloudProcessor.h"
+#include "include/Matching3D.h" 
 
 // =======================================================
 // Framework esterni (Open3D, OpenCV)
@@ -260,7 +260,7 @@ loadDataFromJSON(
     Config cfg;
     try 
     {
-        cfg = readJSON("config.json");  // assicurati che readJSON possa lanciare eccezioni
+        cfg = readJSON("resources/config.json");  // assicurati che readJSON possa lanciare eccezioni
     }
     catch (const std::exception& e) 
     {
@@ -345,7 +345,7 @@ startSystemAlign()
     // Ottengo il sistema di riferimento per inviare i comandi al PLC
 }
 
-// Funzione che fa partire la modilita per ottnere i piani di taglio 
+// Funzione che fa partire la modilita per ottenere i piani di taglio 
 int cutTesting()
 {
     //Parametri
@@ -356,7 +356,7 @@ int cutTesting()
     char* outfile_name = NULL;
 
     // Carica la PointCloud da file o da generatore
-    std::string filename = "Gabbiatrice.dat";
+    std::string filename = "data/Gabbiatrice.dat";
 
 
     FILE* outfile = nullptr;
@@ -407,7 +407,7 @@ int processPointCloudFromFile()
     char* outfile_name = NULL;
 
     // Carica la PointCloud da file o da generatore
-    std::string filename = "Gabbiatrice.dat";
+    std::string filename = "data/Gabbiatrice.dat";
 
 
     FILE* outfile = nullptr;
@@ -476,7 +476,7 @@ int getBinderPointCloud()
     char* outfile_name = NULL;
 
     // Carica la PointCloud da file o da generatore
-    std::string filename = "Gabbiatrice.dat";
+    std::string filename = "data/Gabbiatrice.dat";
     FILE* outfile = nullptr;
     try
     {
@@ -505,8 +505,11 @@ int getBinderPointCloud()
     };
 
     show3dBinderPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
+
+    return 0;
 }
 
+// Funzione che effettua l image matching per cercare la legatrice e stampa a schermo la matrice dell inclinazione e il vettore della traslazione
 void findBinderHead()
 {
     Eigen::Matrix3f transformation_matrix;
@@ -523,8 +526,7 @@ void findBinderHead()
 
 }
 
-int
-main() 
+int main() 
 {
     //
 	//  Parametri configurazione camera SICK 
@@ -565,14 +567,13 @@ main()
     std::cout << "=========================\n" << std::endl;
 
     // Legge i dati dal JSON
-    /*if (!loadDataFromJSON
-    (
+    if (!loadDataFromJSON(
         transportProtocol, deviceIpAddr, receiverIp, storeData, filePrefix, streamingPort, cnt, visionaryType,
         scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
     ))
     {
         return static_cast<int>(ExitCode::eParamError);
-    }*/
+    }
 
     ExitCode exitCode = ExitCode::eOk;
 
@@ -581,7 +582,7 @@ main()
     //  Funzioni
     //
 
-    findBinderHead();
+    //findBinderHead();
     
     //cutTesting();
 
@@ -590,11 +591,10 @@ main()
     //getBinderPointCloud();
 
     // Inizia la trasmissione dei dati
-    //exitCode = runContinuousStreamingDemo
-    //(
-    //    visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
-    //    scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
-    //);
+    exitCode = runContinuousStreamingDemo(
+        visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
+        scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
+    );
 
     std::cout << "exit code " << static_cast<int>(exitCode) << '\n';
 

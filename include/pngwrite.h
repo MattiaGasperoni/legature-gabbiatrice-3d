@@ -6,7 +6,7 @@
 #ifndef IMAGE_STREAMING_AND_STORING_PNGWRITE_H_INCLUDED
 #define IMAGE_STREAMING_AND_STORING_PNGWRITE_H_INCLUDED
 
-#include <spng.h>
+#include <include/spng.h>
 #include <cstdint>
 #include <cstdio>
 #include <stdexcept>

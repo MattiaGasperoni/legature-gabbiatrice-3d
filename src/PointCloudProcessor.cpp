@@ -664,7 +664,6 @@ void show3dBinderPointCloud(PointCloud pointCloud,std::vector<Vector3d> originCu
 
 }
 
-
 cv::Mat start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
 {
 	// Creazione immagine OpenCV nera
