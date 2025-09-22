@@ -1,12 +1,12 @@
-# Ricostruzione 3D dei Punti da Legare nella Gabbiatrice
+# 3D Reconstruction of Binding Points in the Cage Machine
 
-Questo repository contiene il codice e le risorse relative alla **ricostruzione tridimensionale** dei punti da legare all'interno di una **gabbia cilindrica in acciaio**, realizzata da una macchina gabbiatrice Schnell. Il progetto è parte di un sistema automatizzato per il riconoscimento e la legatura robotizzata dei punti di incrocio tra i tondini longitudinali e la spirale.
+This repository contains the code and resources for the **three-dimensional reconstruction** of binding points within a **cylindrical steel cage**, produced by a Schnell cage machine. The project is part of an automated system for recognizing and robotically tying the intersection points between longitudinal rods and the spiral.
 
-## Obiettivo
+## Objective
 
-Sviluppare una pipeline in grado di:
+Develop a pipeline capable of:
 
-- Elaborare **point cloud** acquisite da una camera **SICK Visionary T-Mini**.
-- Rilevare automaticamente i **tondini orizzontali e verticali** all’interno della struttura.
-- Calcolare le **intersezioni 3D** tra i tondini, individuando con precisione i punti di legatura.
-- Fornire le **coordinate spaziali** necessarie per il controllo automatico della macchina di legatura.
+- Processing **point clouds** acquired from a **SICK Visionary T-Mini** camera.  
+- Automatically detecting **horizontal and vertical rods** within the structure.  
+- Calculating the **3D intersections** between rods to accurately identify the binding points.  
+- Providing the **spatial coordinates** required for automated control of the tying machine.
