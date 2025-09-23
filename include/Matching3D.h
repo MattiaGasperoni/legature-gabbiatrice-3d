@@ -21,4 +21,7 @@ typedef pcl::ReferenceFrame RFType;
 typedef pcl::SHOT352 DescriptorType;
 
 // Matching 3Dd debug con un file model e scene già impostati
-void startMatching3D(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& translation_vector);
+void startMatching3DFromFile(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& translation_vector, std::string model_filename_ = "data/milk.pcd", std::string scene_filename_ = "data/Gmilk_cartoon_all_small_clorox.pcd");
+
+
+void startMatching3DFromCamera(Eigen::Matrix3f& transformation_matrix, Eigen::Vector3f& translation_vector, std::string model_filename_, pcl::PointCloud<PointType>::Ptr scene);

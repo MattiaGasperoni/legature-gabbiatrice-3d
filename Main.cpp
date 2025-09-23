@@ -239,6 +239,85 @@ runContinuousStreamingDemo(
     return ExitCode::eOk;
 }
 
+// Funzione per acquisire un singolo frame e ottenere la point cloud
+std::vector<PointXYZ> acquireSingleFramePointCloud(
+    visionary::VisionaryType visionaryType,
+    const std::string&       ipAddress,
+    std::uint16_t            streamingPort)
+{
+    using namespace visionary;
+
+    std::vector<PointXYZ> pointCloud;
+
+    // Crea il controllo per il dispositivo
+    std::shared_ptr<VisionaryControl> visionaryControl = std::make_shared<VisionaryControl>(visionaryType);
+
+    // Connessione al dispositivo
+    std::cout << "[Step] Connessione al dispositivo " << ipAddress << "...\n";
+    if (!visionaryControl->open(ipAddress))
+    {
+        std::fprintf(stderr, "[Errore] Impossibile connettersi al dispositivo.\n");
+        return pointCloud; // Ritorna vector vuoto in caso di errore
+    }
+    std::cout << "[Step] Connessione stabilita.\n";
+
+    // Stop acquisizione (precauzionale)
+    if (!visionaryControl->stopAcquisition())
+    {
+        std::fprintf(stderr, "[Errore] Impossibile fermare l'acquisizione.\n");
+        visionaryControl->close();
+        return pointCloud;
+    }
+
+    // Attendi un momento per assicurarsi che lo stop sia propagato
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    // Login per i diritti di accesso
+    visionaryControl->login(IAuthentication::UserLevel::SERVICE, "Visionary-T-Mini@");
+
+    // Configura TCP
+    setTransportProtocol(visionaryControl, "TCP");
+    setBlobTcpPort(visionaryControl, streamingPort);
+
+    // Logout per tornare in modalità RUN
+    visionaryControl->logout();
+
+    // Avvia acquisizione
+    if (!visionaryControl->startAcquisition())
+    {
+        std::fprintf(stderr, "[Errore] Impossibile avviare l'acquisizione.\n");
+        visionaryControl->close();
+        return pointCloud;
+    }
+
+    // Crea data handler e frame grabber
+    std::shared_ptr<VisionaryData> pDataHandler = visionaryControl->createDataHandler();
+    std::unique_ptr<FrameGrabberBase> pFrameGrabber = visionaryControl->createFrameGrabber();
+
+    // Acquisisce un singolo frame
+    if (!pFrameGrabber->genGetNextFrame(pDataHandler))
+    {
+        std::fprintf(stderr, "[Errore] Timeout nel ricevere il frame.\n");
+    }
+    else
+    {
+        std::printf("Frame ricevuto, frame #%" PRIu32 "\n", pDataHandler->getFrameNum());
+
+        // Genera point cloud dal frame
+        pDataHandler->generatePointCloud(pointCloud);
+        pDataHandler->transformPointCloud(pointCloud);
+
+        std::printf("Point cloud generata con %zu punti.\n", pointCloud.size());
+    }
+
+    // Cleanup
+    visionaryControl->stopAcquisition();
+    pFrameGrabber.reset();
+    visionaryControl->close();
+
+    return pointCloud;
+}
+
 bool 
 loadDataFromJSON(
     std::string& transportProtocol,
@@ -331,19 +410,63 @@ loadPointCloud(
     return X;
 }
 
-void 
-startSystemAlign()
+
+// Funzione principale per il sistema di allineamento
+void startSystemAlign(
+    visionary::VisionaryType visionaryType, 
+    std::string&             deviceIpAddr, 
+    std::uint16_t            streamingPort)
 {
-    // Aquisisco un frame dalla camera
+    // Acquisisco un frame dalla camera
+    std::vector<PointXYZ> pointCloud = acquireSingleFramePointCloud(visionaryType, deviceIpAddr, streamingPort);
 
-    // Ottengo la point cloud di quel frame
+    // Verifica che la point cloud sia stata acquisita correttamente
+    if (pointCloud.empty())
+    {
+        std::fprintf(stderr, "[Errore] Impossibile ottenere la point cloud.\n");
+        return;
+    }
+    else
+    {
+        std::cout << "[Step] Point cloud acquisita con " << pointCloud.size() << " punti.\n";
+    }
 
-    // Uso l algoritmo di correspondence group sulla point cloud 
+    // Converte la point cloud ottenuta per iniziare il matching 3D
+    pcl::PointCloud<PointType>::Ptr scenePointCloud(new pcl::PointCloud<PointType>());
+    scenePointCloud->points.resize(pointCloud.size());
 
-    // Ottengo le matrici e altre info
+    // Usa std::transform per copiare e convertire tutti i punti in una volta
+    std::transform(pointCloud.begin(), pointCloud.end(),
+        scenePointCloud->points.begin(),
+        [](const PointXYZ& point) 
+        {
+            PointType pclPoint;
+            pclPoint.x = point.x;
+            pclPoint.y = point.y;
+            pclPoint.z = point.z;
+            return pclPoint;
+        });
 
-    // Ottengo il sistema di riferimento per inviare i comandi al PLC
+    // Imposta le proprietà della point cloud
+    scenePointCloud->width = scenePointCloud->points.size();
+    scenePointCloud->height = 1;
+    scenePointCloud->is_dense = true;
+
+    std::string model_filename_ = "data/BordoLegatriceRandom.pcd";
+    Eigen::Matrix3f transformation_matrix;
+    Eigen::Vector3f translation_vector;
+
+    startMatching3DFromCamera(transformation_matrix, translation_vector, model_filename_, scenePointCloud);
+
+    // Ottieni le matrici 
+    printf("\n");
+    printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(0, 0), transformation_matrix(0, 1), transformation_matrix(0, 2));
+    printf("        R = | %6.3f %6.3f %6.3f | \n", transformation_matrix(1, 0), transformation_matrix(1, 1), transformation_matrix(1, 2));
+    printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(2, 0), transformation_matrix(2, 1), transformation_matrix(2, 2));
+    printf("\n");
+    printf("        t = < %0.3f, %0.3f, %0.3f >\n", translation_vector(0), translation_vector(1), translation_vector(2));
 }
+
 
 // Funzione che fa partire la modilita per ottenere i piani di taglio 
 int cutTesting()
@@ -510,12 +633,12 @@ int getBinderPointCloud()
 }
 
 // Funzione che effettua l image matching per cercare la legatrice e stampa a schermo la matrice dell inclinazione e il vettore della traslazione
-void findBinderHead()
+void TestFindBinderHead()
 {
     Eigen::Matrix3f transformation_matrix;
     Eigen::Vector3f translation_vector;
 
-    startMatching3D(transformation_matrix, translation_vector);
+    startMatching3DFromFile(transformation_matrix, translation_vector);
 
     printf("\n");
     printf("            | %6.3f %6.3f %6.3f | \n", transformation_matrix(0, 0), transformation_matrix(0, 1), transformation_matrix(0, 2));
@@ -582,7 +705,9 @@ int main()
     //  Funzioni
     //
 
-    //findBinderHead();
+    startSystemAlign(visionaryType, deviceIpAddr, streamingPort);
+
+    //TestFindBinderHead();
     
     //cutTesting();
 
