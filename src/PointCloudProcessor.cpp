@@ -483,7 +483,6 @@ void checkPointCloud(const std::vector<T>& cloud, const std::string& message)
 	if (cloud.empty())
 	{
 		std::cerr << "[Error] The Point Cloud is empty" << std::endl;
-		std::exit(EXIT_FAILURE);
 	}
 	else
 	{
@@ -732,15 +731,15 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 	PointCloud originalPointCloud = pointCloud;
 
 	// Taglio della PointCloud con i piani di taglio definiti in configurazione
-	cutPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
+	//cutPointCloud(pointCloud, originCutPlanes, inclinationCutPlanes);
 
-	checkPointCloud(pointCloud.points, "[Debug] Point Cloud points post - plane cut: ");
+	//checkPointCloud(pointCloud.points, "[Debug] Point Cloud points post - plane cut: ");
 
 	// [Debug] Proietto la PointCloud rimasta dopo il taglio
 	//projectPointCloudBasedAnotherCloud(otp_image, pointCloud, originalPointCloud, origin, normal, scale, img_width, img_height, cv::Scalar(0, 255, 0));
 
 	// Hough per trovare i tornidi orizzontali
-	PointCloud remainingPoints;
+	/*PointCloud remainingPoints;
 	std::vector<Line3D> houghLines = getLineSteelBars(pointCloud, remainingPoints);
 	std::cout << "Rilevate " << houghLines.size() << " rette" << "\n" << std::endl;
 	Vector3d minPshifted, maxPshifted;
@@ -753,7 +752,7 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 		{
 			linesPointCloud.points.push_back(p);
 		}
-	}
+	}*/
 
 	// [Debug] Proietto le rette trovate
 	//projectPointCloudBasedAnotherCloud(otp_image, linesPointCloud, originalPointCloud, origin, normal, scale, img_width, img_height,cv::Scalar(0,0,255));
@@ -768,26 +767,26 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 	//projectPointCloudBasedAnotherCloud(otp_image, remainingPoints, originalPointCloud, origin, normal, scale, img_width, img_height);
 
 	// Applico l'algoritmo di Hough per trovare gli archi
-	std::vector<ArcPlane> houghArcs = getArcSteelBars(remainingPoints);
-	std::cout << "Rilevate " << houghArcs.size() << " semi circonferenze" << "\n" << std::endl;
+	//std::vector<ArcPlane> houghArcs = getArcSteelBars(remainingPoints);
+	//std::cout << "Rilevate " << houghArcs.size() << " semi circonferenze" << "\n" << std::endl;
 
-	// Calcolo e proiezione delle intersezioni
-	std::vector<Vector3d> intersectionPoints = getIntersectionPoints(houghLines, houghArcs);
+	//// Calcolo e proiezione delle intersezioni
+	//std::vector<Vector3d> intersectionPoints = getIntersectionPoints(houghLines, houghArcs);
 
-	// Trasforma intersectionPoints in PointCloud
-	PointCloud intersectionCloud;
-	for (const auto& pt : intersectionPoints)
-		intersectionCloud.points.push_back(pt);
+	//// Trasforma intersectionPoints in PointCloud
+	//PointCloud intersectionCloud;
+	//for (const auto& pt : intersectionPoints)
+	//	intersectionCloud.points.push_back(pt);
 
-	// Filtra le intersezioni sospese nel vuoto
-	double neighbor_radius = 10.0; // raggio entro cui cercare punti vicini
-	int min_neighbors = 4;        // numero minimo di punti per conservare l'intersezione
-	PointCloud filteredIntersection = filterIntersection(intersectionCloud, originalPointCloud, neighbor_radius, min_neighbors);
+	//// Filtra le intersezioni sospese nel vuoto
+	//double neighbor_radius = 10.0; // raggio entro cui cercare punti vicini
+	//int min_neighbors = 4;        // numero minimo di punti per conservare l'intersezione
+	//PointCloud filteredIntersection = filterIntersection(intersectionCloud, originalPointCloud, neighbor_radius, min_neighbors);
 
-	std::cout << "Rilevate " << filteredIntersection.points.size() << " intersezioni" << "\n" << std::endl;
+	//std::cout << "Rilevate " << filteredIntersection.points.size() << " intersezioni" << "\n" << std::endl;
 
 	// Proietta i punti filtrati
-	projectPointCloudBasedAnotherCloud(
+	/*projectPointCloudBasedAnotherCloud(
 		otp_image,
 		filteredIntersection,
 		originalPointCloud,
@@ -795,28 +794,28 @@ cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int
 		img_width, img_height,
 		cv::Scalar(0, 255, 0),       
 		6, 4                        
-	);
+	);*/
 
 
 	//
 	// Visualizzazione 3D con Open3D
 	//
 
-	std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geoms;
+	//std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geoms;
 
-	// Aggiungiamo alle nostre geometrie la PointCloud originale
-	geoms.push_back(MakePointCloud(originalPointCloud, cv::Scalar(0, 0, 0)));
+	//// Aggiungiamo alle nostre geometrie la PointCloud originale
+	//geoms.push_back(MakePointCloud(originalPointCloud, cv::Scalar(0, 0, 0)));
 
-	// Aggiungiamo i punti dell'intersezione
-	for (const auto& i3d : filteredIntersection.points)
-	{
-		auto s = open3d::geometry::TriangleMesh::CreateSphere(20);
-		s->PaintUniformColor({ 1.0,0,0 });
-		s->Translate({ i3d.x, i3d.y, i3d.z });
-		geoms.push_back(s);
-	}
-	// Visualizzatore 3D delle geometrie 
-	open3d::visualization::DrawGeometries(geoms);
+	//// Aggiungiamo i punti dell'intersezione
+	//for (const auto& i3d : filteredIntersection.points)
+	//{
+	//	auto s = open3d::geometry::TriangleMesh::CreateSphere(20);
+	//	s->PaintUniformColor({ 1.0,0,0 });
+	//	s->Translate({ i3d.x, i3d.y, i3d.z });
+	//	geoms.push_back(s);
+	//}
+	//// Visualizzatore 3D delle geometrie 
+	//open3d::visualization::DrawGeometries(geoms);
 
     return otp_image;
 }
