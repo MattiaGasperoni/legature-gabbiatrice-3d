@@ -516,89 +516,128 @@ std::shared_ptr<open3d::geometry::PointCloud> MakePointCloud(PointCloud pcd, cv:
 
 
 
-void startPlaneCuttingSearch(PointCloud& cloud, Eigen::Vector3d& projectonPlaneOrigin, Eigen::Vector3d& projectonPlaneNormal, double scale, int img_width, int img_height)
+void startPlaneCuttingSearch(PointCloud& cloud,const Eigen::Vector3d& projectionPlaneOrigin,const Eigen::Vector3d& projectionPlaneNormal,double scale,int imgWidth,int imgHeight)
 {
 	// Parametri iniziali
-	double pitch = -30, yaw = 500, roll = 70;
-	double _step = 0.1;
-	cv::Mat img;
-	char key = 0;
-
+	double pitch = -30.0, yaw = 500.0, roll = 70.0;
+	double step = 0.1;
 	Eigen::Vector3d cutPlaneOrigin(187.899, 86.022, 824.946);
+	Eigen::Vector3d lateralViewNormal(101, -781, 750);
+
+	// Variabili di stato
+	cv::Mat frontalView, lateralView;
+	char key = 0;
 	PointCloud cuttedPointCloud;
 
-	do
+	// Cache per debug (stampa solo quando cambiano i valori)
+	Eigen::Vector3d prevOrigin = cutPlaneOrigin;
+	Eigen::Vector3d prevLateralNormal = lateralViewNormal;
+	double prevPitch = pitch, prevYaw = yaw, prevRoll = roll;
+	bool valuesChanged = true;
+
+	std::cout << "\n=== CONTROLLI TASTIERA ===\n"
+		<< "Origine piano: Q/W (X), A/S (Y), Z/X (Z)\n"
+		<< "Angoli piano : O/P (pitch), K/L (yaw), N/M (roll)\n"
+		<< "Vista laterale: E/R (X), D/F (Y), C/V (Z)\n"
+		<< "Step: G (x10), H (/10)\n"
+		<< "Reset: T, Esci: ESC\n"
+		<< "==========================\n" << std::endl;
+
+	do 
 	{
-		img = cv::Mat(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
+		// Inizializza le immagini
+		frontalView = cv::Mat(imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
+		lateralView = cv::Mat(imgHeight, imgWidth, CV_8UC3, cv::Scalar(0, 0, 0));
 
-		projectPointCloud(img, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(255, 255, 255));
-		projectPoint(img, cloud, projectonPlaneOrigin, projectonPlaneNormal, img_width, img_height, cutPlaneOrigin);
-
+		// Calcola il piano di taglio
 		std::array<Vector3d, 3> planePoints;
-		Vector3d converted_origin(cutPlaneOrigin.x(), cutPlaneOrigin.y(), cutPlaneOrigin.z());
-		planePoints = plane_points_from_anchor_and_euler(converted_origin, pitch, roll, yaw);
-
+		Vector3d convertedOrigin(cutPlaneOrigin.x(), cutPlaneOrigin.y(), cutPlaneOrigin.z());
+		planePoints = plane_points_from_anchor_and_euler(convertedOrigin, pitch, roll, yaw);
 		cuttedPointCloud = cloudPlaneCut(cloud, planePoints[0], planePoints[1], planePoints[2], false, false);
 
-		// Visualizza i punti che teniamo in verde
-		projectPointCloudBasedAnotherCloud(img, cuttedPointCloud, cloud, projectonPlaneOrigin, projectonPlaneNormal, scale, img_width, img_height, cv::Scalar(0, 255, 0));
+		// Renderizza vista frontale
+		projectPointCloud(frontalView, cloud, projectionPlaneOrigin, projectionPlaneNormal,scale, imgWidth, imgHeight, cv::Scalar(255, 255, 255));
+		projectPointCloudBasedAnotherCloud(frontalView, cuttedPointCloud, cloud,projectionPlaneOrigin, projectionPlaneNormal,scale, imgWidth, imgHeight, cv::Scalar(0, 255, 0));
+		projectPoint(frontalView, cloud, projectionPlaneOrigin, projectionPlaneNormal,imgWidth, imgHeight, cutPlaneOrigin);
 
-		cv::imshow("Plane Cutting View", img);
+		// Renderizza vista laterale  
+		projectPointCloud(lateralView, cloud, projectionPlaneOrigin, lateralViewNormal,	scale, imgWidth, imgHeight, cv::Scalar(255, 255, 255));
+		projectPointCloudBasedAnotherCloud(lateralView, cuttedPointCloud, cloud,projectionPlaneOrigin, lateralViewNormal,scale, imgWidth, imgHeight, cv::Scalar(0, 255, 0));
+		projectPoint(lateralView, cloud, projectionPlaneOrigin, lateralViewNormal,imgWidth, imgHeight, cutPlaneOrigin);
 
+		// Mostra le finestre
+		cv::imshow("Vista Frontale", frontalView);
+		cv::imshow("Vista Laterale", lateralView);
+
+		// Gestione input tastiera
 		key = cv::waitKey(10);
 
-		// Controllo spostamento origine
-		if (key == 'q') cutPlaneOrigin.x() += _step;
-		if (key == 'w') cutPlaneOrigin.x() -= _step;
-		if (key == 'a') cutPlaneOrigin.y() += _step;
-		if (key == 's') cutPlaneOrigin.y() -= _step;
-		if (key == 'z') cutPlaneOrigin.z() += _step;
-		if (key == 'x') cutPlaneOrigin.z() -= _step;
+		// Controlli vista laterale
+		if (key == 'e') lateralViewNormal.x() += step;
+		if (key == 'r') lateralViewNormal.x() -= step;
+		if (key == 'd') lateralViewNormal.y() += step;
+		if (key == 'f') lateralViewNormal.y() -= step;
+		if (key == 'c') lateralViewNormal.z() += step;
+		if (key == 'v') lateralViewNormal.z() -= step;
 
-		if (key == 'p') { _step *= 10; std::cout << "step: " << _step << std::endl; }
-		if (key == 'o') { _step /= 10; std::cout << "step: " << _step << std::endl; }
+		// Controlli origine piano di taglio
+		if (key == 'q') cutPlaneOrigin.x() += step;
+		if (key == 'w') cutPlaneOrigin.x() -= step;
+		if (key == 'a') cutPlaneOrigin.y() += step;
+		if (key == 's') cutPlaneOrigin.y() -= step;
+		if (key == 'z') cutPlaneOrigin.z() += step;
+		if (key == 'x') cutPlaneOrigin.z() -= step;
 
-		if (key == 'i')
-		{
-			cutPlaneOrigin = Eigen::Vector3d(187.899, 206.022, 776.046);
-			pitch = yaw = roll = 0.0;
+		// Controlli angoli piano
+		if (key == 'o') pitch += step;
+		if (key == 'p') pitch -= step;
+		if (key == 'k') yaw += step;
+		if (key == 'l') yaw -= step;
+		if (key == 'n') roll += step;
+		if (key == 'm') roll -= step;
+
+		// Controlli step
+		if (key == 'g') {
+			step *= 10.0;
+			std::cout << "Step: " << step << std::endl;
+		}
+		if (key == 'h') {
+			step /= 10.0;
+			std::cout << "Step: " << step << std::endl;
 		}
 
-		if (key == 'j') pitch += _step;
-		if (key == 'k') yaw += _step;
-		if (key == 'l') roll += _step;
-		if (key == 'b') pitch -= _step;
-		if (key == 'n') yaw -= _step;
-		if (key == 'm') roll -= _step;
+		// Reset
+		if (key == 't') {
+			cutPlaneOrigin = Eigen::Vector3d(187.899, 206.022, 776.046);
+			pitch = yaw = roll = 0.0;
+			lateralViewNormal = Eigen::Vector3d(101, -781, 750);
+			std::cout << "Parametri resettati\n";
+		}
 
-		std::cout << "Origin coordinates: X=" << cutPlaneOrigin.x()
-			<< ", Y=" << cutPlaneOrigin.y()
-			<< ", Z=" << cutPlaneOrigin.z() << std::endl;
-		std::cout << "Inclinazione: pitch=" << pitch << ", yaw=" << yaw << ", roll=" << roll << std::endl;
+		// Debug automatico solo quando cambiano i valori
+		if (valuesChanged || cutPlaneOrigin != prevOrigin || lateralViewNormal != prevLateralNormal ||	pitch != prevPitch || yaw != prevYaw || roll != prevRoll)
+		{
+			std::cout << "Origine: X=" << cutPlaneOrigin.x() << ", Y=" << cutPlaneOrigin.y() << ", Z=" << cutPlaneOrigin.z()
+				<< " | Angoli: pitch=" << pitch << ", yaw=" << yaw << ", roll=" << roll << std::endl;
 
-	} while (key != 27);
+			// Aggiorna cache
+			prevOrigin = cutPlaneOrigin;
+			prevLateralNormal = lateralViewNormal;
+			prevPitch = pitch;
+			prevYaw   = yaw;
+			prevRoll = roll;
+			valuesChanged = false;
+		}
+
+	} while (key != 27); // ESC per uscire
 
 	cv::destroyAllWindows();
 
-	//
-	// Visualizzazione con Open3D
-	//
-	//	Vector3d(187.899, 86.022, 824.946)     //Taglio punti laterali a destra
-	//};
-
-
-	//	Vector3d(-30,500,70),
-	//};
-
-	checkPointCloud(cuttedPointCloud.points, "\n[Debug] Point Cloud points post - plane cut: ");
-
-	std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geoms;
-
-	// Aggiungiamo alle nostre geometrie la PointCloud originale
-	geoms.push_back(MakePointCloud(cuttedPointCloud, cv::Scalar(0, 0, 0)));
-
-	// Visualizzatore 3D delle geometrie 
-	open3d::visualization::DrawGeometries(geoms);
+	// Visualizzazione 3D finale
+	checkPointCloud(cuttedPointCloud.points, "\n[Debug] Punti dopo il taglio: ");
+	std::vector<std::shared_ptr<const open3d::geometry::Geometry>> geometries;
+	geometries.push_back(MakePointCloud(cuttedPointCloud, cv::Scalar(0, 0, 0)));
+	open3d::visualization::DrawGeometries(geometries);
 }
 
 
@@ -664,24 +703,15 @@ void show3dBinderPointCloud(PointCloud pointCloud,std::vector<Vector3d> originCu
 
 }
 
-cv::Mat start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
+void start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale)
 {
-	// Creazione immagine OpenCV nera
-	cv::Mat otp_image(img_height, img_width, CV_8UC3, cv::Scalar(0, 0, 0));
-
 	checkPointCloud(cloud, "[Debug] Point Cloud points pre - conversion: ");
 
 	PointCloud pointCloud = convertPointCloud(cloud);
 
 	checkPointCloud(pointCloud.points);
 
-	// Proietto la PointCloud sulla immagine 2D di OpenCV
-	projectPointCloud(otp_image, pointCloud, origin, normal, scale, img_width, img_height);
-
 	startPlaneCuttingSearch(pointCloud, origin, normal, scale, img_width, img_height);
-
-	return otp_image;
-
 }
 
 cv::Mat processPointCloud(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale,std::vector<Vector3d> originCutPlanes,std::vector<Vector3d> inclinationCutPlanes)

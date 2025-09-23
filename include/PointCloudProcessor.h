@@ -138,7 +138,7 @@ void show3dBinderPointCloud(
 );
 
 // Funzione che fa avviare il taglio della pointcloud interattivo
-cv::Mat start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale);
+void start3dPointCloudCut(const std::vector<PointXYZ>& cloud, int img_width, int img_height, Eigen::Vector3d& origin, Eigen::Vector3d& normal, double scale);
 
 // Funzione per processare point cloud e convertirla in immagine
 cv::Mat processPointCloud(

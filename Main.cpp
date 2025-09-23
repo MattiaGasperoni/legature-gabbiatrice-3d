@@ -470,14 +470,14 @@ void startSystemAlign(
 }
 
 
-// Funzione che fa partire la modilita per ottenere i piani di taglio 
-int cutTesting()
+// Funzione che fa partire la modalità per ottenere i piani di taglio da una point cloud ottenuta da file
+int interactive3DCutPlaneFinder()
 {
     //Parametri
     PointCloud X;
     std::vector<PointXYZ> cloud;
 
-    char opt_delim = ',';
+    char opt_delim     = ',';
     char* outfile_name = NULL;
 
     // Carica la PointCloud da file o da generatore
@@ -506,19 +506,11 @@ int cutTesting()
         cloud.push_back(p);
     }
 
-    //Eigen::Vector3d origin(0.0, 400.0, 580.0);
     Eigen::Vector3d origin(0.0, 0.0, 0.0);
     Eigen::Vector3d normal(0.0, 0.0, 1.0);
 
     // Processa e visualizza l'immagine
-    cv::Mat img = start3dPointCloudCut(
-        cloud,
-        640,
-        640,
-        origin,
-        normal,
-        1.0
-    );
+    start3dPointCloudCut(cloud,640,640,origin,normal,1.0);
 }
 
 // Elabora la point cloud e restituisce prima in 3D poi in due 2D i punti da legare
@@ -693,13 +685,13 @@ int main()
     std::cout << "=========================\n" << std::endl;
 
     // Legge i dati dal JSON
-    if (!loadDataFromJSON(
-        transportProtocol, deviceIpAddr, receiverIp, storeData, filePrefix, streamingPort, cnt, visionaryType,
-        scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
-    ))
-    {
-        return static_cast<int>(ExitCode::eParamError);
-    }
+    //if (!loadDataFromJSON(
+    //    transportProtocol, deviceIpAddr, receiverIp, storeData, filePrefix, streamingPort, cnt, visionaryType,
+    //    scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
+    //))
+    //{
+    //    return static_cast<int>(ExitCode::eParamError);
+    //}
 
     ExitCode exitCode = ExitCode::eOk;
 
@@ -708,21 +700,21 @@ int main()
     //  Funzioni
     //
 
-    startSystemAlign(visionaryType, deviceIpAddr, streamingPort);
+    //startSystemAlign(visionaryType, deviceIpAddr, streamingPort);
 
-    TestFindBinderHead();
+    //TestFindBinderHead();
     
-    cutTesting();
+    interactive3DCutPlaneFinder();
 
-    processPointCloudFromFile();
+    //processPointCloudFromFile();
 
     //getBinderPointCloud();
 
     // Inizia la trasmissione dei dati
-    exitCode = runContinuousStreamingDemo(
+    /*exitCode = runContinuousStreamingDemo(
         visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
         scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
-    );
+    );*/
 
     std::cout << "exit code " << static_cast<int>(exitCode) << '\n';
 
