@@ -26,6 +26,8 @@
 #include <include/PointXYZ.h>
 #include <include/VisionaryControl.h>
 #include <include/VisionaryType.h>
+#include <pcl/pcl_config.h>  
+
 
 // =======================================================
 // Header locali del progetto
@@ -687,6 +689,7 @@ int main()
     std::cout << "=== Library Versions ===" << std::endl;
     std::cout << "OpenCV version: " << CV_VERSION << std::endl;
     std::cout << "Open3D version: " << OPEN3D_VERSION << std::endl;
+    std::cout << "PCL    version: " << PCL_VERSION_PRETTY << std::endl;
     std::cout << "=========================\n" << std::endl;
 
     // Legge i dati dal JSON
