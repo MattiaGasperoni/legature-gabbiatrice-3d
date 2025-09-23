@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: Unlicense
 
-#include "include/CoLaParameterWriter.h"
+#include "CoLaParameterWriter.h"
 
-#include "include/MD5.h"
-#include "include/VisionaryEndian.h"
+#include "MD5.h"
+#include "VisionaryEndian.h"
 
 #include <algorithm> // for min
 #include <cstring>   // for strlen

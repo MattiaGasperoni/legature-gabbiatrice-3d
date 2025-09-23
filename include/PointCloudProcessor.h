@@ -18,16 +18,16 @@
 // =======================================================
 // SDK / Librerie hardware specifiche
 // =======================================================
-#include <include/PointXYZ.h>
+#include <PointXYZ.h>
 
 // =======================================================
 // Header locali del progetto
 // =======================================================
-#include "include/BlobServerConfig.h"
-#include "include/UdpParsing.h"
-#include "include/exitcodes.h"
-#include "include/Config.h"
-#include "include/pointcloud.h"
+#include "BlobServerConfig.h"
+#include "UdpParsing.h"
+#include "exitcodes.h"
+#include "Config.h"
+#include "pointcloud.h"
 
 
 // =======================================================

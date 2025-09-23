@@ -2,7 +2,7 @@
 // Copyright (c) 2024 SICK AG, Waldkirch
 //
 // SPDX-License-Identifier: Unlicense
-#include "include/pngwrite.h"
+#include "pngwrite.h"
 
 int write_png_u16(const std::string&     file_name,
                   std::vector<uint16_t>& image_data,

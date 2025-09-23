@@ -164,54 +164,15 @@
     <ClCompile Include="src\VisionaryType.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\AuthenticationLegacy.h" />
-    <ClInclude Include="include\AuthenticationSecure.h" />
-    <ClInclude Include="include\BlobServerConfig.h" />
-    <ClInclude Include="include\CoLa2ProtocolHandler.h" />
-    <ClInclude Include="include\CoLaBProtocolHandler.h" />
-    <ClInclude Include="include\CoLaCommand.h" />
-    <ClInclude Include="include\CoLaCommandType.h" />
-    <ClInclude Include="include\CoLaError.h" />
-    <ClInclude Include="include\CoLaParameterReader.h" />
-    <ClInclude Include="include\CoLaParameterWriter.h" />
     <ClInclude Include="include\config.h" />
-    <ClInclude Include="include\ControlSession.h" />
-    <ClInclude Include="include\exitcodes.h" />
-    <ClInclude Include="include\FrameGrabber.h" />
-    <ClInclude Include="include\FrameGrabberBase.h" />
-    <ClInclude Include="include\framewrite.h" />
     <ClInclude Include="include\hough.h" />
     <ClInclude Include="include\HoughAlgorithm.h" />
-    <ClInclude Include="include\IAuthentication.h" />
-    <ClInclude Include="include\IProtocolHandler.h" />
-    <ClInclude Include="include\ITransport.h" />
     <ClInclude Include="include\Matching3D.h" />
     <ClInclude Include="include\Matrix.h" />
-    <ClInclude Include="include\MD5.h" />
-    <ClInclude Include="include\NetLink.h" />
-    <ClInclude Include="include\NumericConv.h" />
-    <ClInclude Include="include\pamwrite.h" />
-    <ClInclude Include="include\pngwrite.h" />
     <ClInclude Include="include\pointcloud.h" />
-    <ClInclude Include="include\PointCloudPlyWriter.h" />
     <ClInclude Include="include\PointCloudProcessor.h" />
-    <ClInclude Include="include\PointXYZ.h" />
-    <ClInclude Include="include\SHA256.h" />
-    <ClInclude Include="include\SockRecord.h" />
     <ClInclude Include="include\sphere.h" />
-    <ClInclude Include="include\spng.h" />
-    <ClInclude Include="include\TcpSocket.h" />
-    <ClInclude Include="include\UdpParsing.h" />
-    <ClInclude Include="include\UdpSocket.h" />
     <ClInclude Include="include\vector3d.h" />
-    <ClInclude Include="include\VisionaryAutoIP.h" />
-    <ClInclude Include="include\VisionaryControl.h" />
-    <ClInclude Include="include\VisionaryData.h" />
-    <ClInclude Include="include\VisionaryDataStream.h" />
-    <ClInclude Include="include\VisionaryEndian.h" />
-    <ClInclude Include="include\VisionarySData.h" />
-    <ClInclude Include="include\VisionaryTMiniData.h" />
-    <ClInclude Include="include\VisionaryType.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\BordoLegatrice.pcd" />

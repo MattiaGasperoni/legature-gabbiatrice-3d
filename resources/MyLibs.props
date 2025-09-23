@@ -4,23 +4,20 @@
 		<ClCompile>
 			<!-- Percorsi per gli header -->
 			<AdditionalIncludeDirectories>
-				C:\PCL 1.15.1\include\pcl-1.15;
-				C:\PCL 1.15.1\3rdParty\Boost\include\boost-1_87;
-				C:\PCL 1.15.1\3rdParty\Eigen\include\eigen3;
-				C:\PCL 1.15.1\3rdParty\FLANN\include;
-				C:\PCL 1.15.1\3rdParty\Qhull\include;
-				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4;
-				C:\PCL 1.15.1\3rdParty\VTK\include\vtk-9.4\vtklz4\lib;
-				C:\PCL 1.15.1\3rdParty\OpenNI2\Include;
-				C:\Program Files\OpenNI2\Tools;
-				C:\Program Files\OpenNI2\Samples\Bin;
-				C:\open3d\include;
-				C:\open3d\include\open3d\3rdparty;
-				C:\Users\mattia.gasperoni\source\repos\test-open3d\libs;
-				C:\Users\mattia.gasperoni\source\repos\test-libreria-hough\test-libreria-hough\libs;
-				C:\libs\eigen-3.4.0;
-				C:\Users\mattia.gasperoni\Desktop\libsDownload\vcpkg\installed\x64-windows\include\opencv4;
-				C:\Users\mattia.gasperoni\source\repos\LegatureGabbiatrice;
+				$(ProjectDir)dependencies\PCL\include\pcl-1.15;
+				$(ProjectDir)dependencies\Boost\include\boost-1_87;
+				$(ProjectDir)dependencies\Eigen3\include\eigen3;
+				$(ProjectDir)dependencies\FLANN\include;
+				$(ProjectDir)dependencies\Qhull\include;
+				$(ProjectDir)dependencies\VTK\include\vtk-9.4;
+				$(ProjectDir)dependencies\VTK\include\vtk-9.4\vtklz4\lib;
+				$(ProjectDir)dependencies\OpenNI2\Include;
+				$(ProjectDir)dependencies\Open3d\include;
+				$(ProjectDir)dependencies\Open3d\include\open3d\3rdparty;
+				$(ProjectDir)dependencies\OpenCV\include;
+				$(ProjectDir)dependencies\OpenCV\include\opencv4;
+				$(ProjectDir)dependencies\SICK Visionary\include;
+				$(ProjectDir)dependencies\Json\include;
 				$(ProjectDir)include;
 				%(AdditionalIncludeDirectories)
 			</AdditionalIncludeDirectories>
@@ -85,13 +82,14 @@
 				%(AdditionalDependencies)
 			</AdditionalDependencies>
 			<AdditionalLibraryDirectories>
-				C:\PCL 1.15.1\lib;
-				C:\PCL 1.15.1\3rdParty\Boost\lib;
-				C:\PCL 1.15.1\3rdParty\VTK\lib;
-				C:\PCL 1.15.1\3rdParty\FLANN\lib;
-				C:\PCL 1.15.1\3rdParty\Qhull\lib;
-				C:\open3d\lib;
-				$(ProjectDir)lib;
+				$(ProjectDir)dependencies\PCL\lib;
+				$(ProjectDir)dependencies\Boost\lib;
+				$(ProjectDir)dependencies\VTK\lib;
+				$(ProjectDir)dependencies\FLANN\lib;
+				$(ProjectDir)dependencies\Qhull\lib;
+				$(ProjectDir)dependencies\Open3d\lib;
+				$(ProjectDir)dependencies\OpenCV\lib;
+				$(ProjectDir)dependencies\SICK Visionary;
 				%(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
 		</Link>

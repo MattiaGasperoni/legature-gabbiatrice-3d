@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: Unlicense
 
-#include "include/AuthenticationSecure.h"
-#include "include/CoLaParameterWriter.h"
-#include "include/SHA256.h"
+#include "AuthenticationSecure.h"
+#include "CoLaParameterWriter.h"
+#include "SHA256.h"
 
 namespace visionary {
 

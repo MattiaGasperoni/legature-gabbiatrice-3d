@@ -20,24 +20,24 @@
 // =======================================================
 // SDK / Librerie hardware specifiche
 // =======================================================
-#include <include/FrameGrabber.h>
-#include <include/NetLink.h>
-#include <include/PointCloudPlyWriter.h>
-#include <include/PointXYZ.h>
-#include <include/VisionaryControl.h>
-#include <include/VisionaryType.h>
+#include <FrameGrabber.h>
+#include <NetLink.h>
+#include <PointCloudPlyWriter.h>
+#include <PointXYZ.h>
+#include <VisionaryControl.h>
+#include <VisionaryType.h>
 #include <pcl/pcl_config.h>  
 
 
 // =======================================================
 // Header locali del progetto
 // =======================================================
-#include "include/BlobServerConfig.h"
-#include "include/UdpParsing.h"
-#include "include/exitcodes.h"
-#include "include/Config.h"
-#include "include/PointCloudProcessor.h"
-#include "include/Matching3D.h" 
+#include "BlobServerConfig.h"
+#include "UdpParsing.h"
+#include "exitcodes.h"
+#include "Config.h"
+#include "PointCloudProcessor.h"
+#include "Matching3D.h" 
 
 // =======================================================
 // Framework esterni (Open3D, OpenCV)
@@ -710,11 +710,11 @@ int main()
 
     startSystemAlign(visionaryType, deviceIpAddr, streamingPort);
 
-    //TestFindBinderHead();
+    TestFindBinderHead();
     
-    //cutTesting();
+    cutTesting();
 
-    //processPointCloudFromFile();
+    processPointCloudFromFile();
 
     //getBinderPointCloud();
 

@@ -1,4 +1,4 @@
-#include "include/Config.h"
+#include "Config.h"
 #include <fstream>
 #include <stdexcept>
 #include <Eigen/Dense>
