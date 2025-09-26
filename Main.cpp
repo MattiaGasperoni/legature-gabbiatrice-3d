@@ -27,7 +27,8 @@
 #include <VisionaryControl.h>
 #include <VisionaryType.h>
 #include <pcl/pcl_config.h>  
-
+#include <windows.h>
+#include <conio.h>
 
 // =======================================================
 // Header locali del progetto
@@ -40,7 +41,7 @@
 #include "Matching3D.h" 
 
 // =======================================================
-// Framework esterni (Open3D, OpenCV)
+// Framework esterni (Open3D, OpenCV, TwinCAT)
 // =======================================================
 // Disabilita warning di troncamento e conversione solo per Open3D
 #pragma warning(push)
@@ -50,6 +51,9 @@
 #pragma warning(pop)
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
+
+#include "TcAdsDef.h"
+#include "TcAdsAPI.h"
 
 
 
@@ -537,6 +541,10 @@ void interactive3DCutPlaneFinderFromCamera(visionary::VisionaryType visionaryTyp
     start3dPointCloudCut(pointCloud, 640, 640, origin, normal, 1.0);
 }
 
+//
+//  Temp Function
+//
+
 // Elabora la point cloud e restituisce prima in 3D poi in due 2D i punti da legare
 int processPointCloudFromFile()
 {
@@ -589,16 +597,7 @@ int processPointCloudFromFile()
 	Eigen::Vector3d origin(0.0, 0.0, 0.0);
 	Eigen::Vector3d normal(0.0, 0.0, 1.0);
 
-    cv::Mat img = processPointCloud(
-        cloud,
-        640,
-        640,
-        origin,
-        normal,
-        1.0,
-        originCutPlanes,
-        inclinationCutPlanes
-	);
+    cv::Mat img = processPointCloud(cloud,640,640,origin,normal,1.0,originCutPlanes,inclinationCutPlanes);
 
     cv::imshow("finalAnnotatedImage", img);
 
@@ -667,6 +666,123 @@ void TestFindBinderHead()
 
 }
 
+void testPLC()
+{
+    long        nTemp;
+    AdsVersion* pDLLVersion;
+
+    nTemp = AdsGetDllVersion();
+    pDLLVersion = (AdsVersion*)&nTemp;
+    cout << "Version: " << (int)pDLLVersion->version << '\n';
+    cout << "Revision: " << (int)pDLLVersion->revision << '\n';
+    cout << "Build: " << pDLLVersion->build << '\n';
+
+    long nErr, nPort;
+    AmsAddr Addr;
+    PAmsAddr pAddr = &Addr;
+
+    ULONG lHdlCnt, lHdlX, lHdlY, lHdlZ;
+
+    int16_t nCntData;
+    double xValue, yValue, zValue;
+
+    char var_cnt[] = { "MAIN.cnt" };
+    char var_x[] = { "MAIN.x" };
+    char var_y[] = { "MAIN.y" };
+    char var_z[] = { "MAIN.z" };
+
+    // Open communication port on the ADS router
+    nPort = AdsPortOpen();
+    nErr = AdsGetLocalAddress(pAddr);
+    if (nErr) cerr << "Error: AdsGetLocalAddress: " << nErr << '\n';
+    pAddr->port = 851;
+
+    // Get handle for MAIN.cnt
+    nErr = AdsSyncReadWriteReq(pAddr, ADSIGRP_SYM_HNDBYNAME, 0x0, sizeof(lHdlCnt), &lHdlCnt, sizeof(var_cnt), var_cnt);
+    if (nErr) cerr << "Error getting handle cnt: " << nErr << '\n';
+
+    // Get handle for MAIN.x
+    nErr = AdsSyncReadWriteReq(pAddr, ADSIGRP_SYM_HNDBYNAME, 0x0, sizeof(lHdlX), &lHdlX, sizeof(var_x), var_x);
+    if (nErr) cerr << "Error getting handle x: " << nErr << '\n';
+
+    // Get handle for MAIN.y
+    nErr = AdsSyncReadWriteReq(pAddr, ADSIGRP_SYM_HNDBYNAME, 0x0, sizeof(lHdlY), &lHdlY, sizeof(var_y), var_y);
+    if (nErr) cerr << "Error getting handle y: " << nErr << '\n';
+
+    // Get handle for MAIN.z
+    nErr = AdsSyncReadWriteReq(pAddr, ADSIGRP_SYM_HNDBYNAME, 0x0, sizeof(lHdlZ), &lHdlZ, sizeof(var_z), var_z);
+    if (nErr) cerr << "Error getting handle z: " << nErr << '\n';
+
+    while (true)
+    {
+        //  Lettura cnt
+        nErr = AdsSyncReadReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlCnt, sizeof(nCntData), &nCntData);
+        if (nErr)
+            cerr << "Error reading cnt: " << nErr << '\n';
+        else
+            cout << "var cnt: " << nCntData << '\n';
+
+        //  Lettura x  
+        nErr = AdsSyncReadReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlX, sizeof(xValue), &xValue);
+        if (nErr)
+            cerr << "Error reading x: " << nErr << '\n';
+        else
+        {
+            xValue += 1.0;  // Incremento
+
+            // Scrittura del nuovo valore in x
+            nErr = AdsSyncWriteReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlX, sizeof(xValue), &xValue);
+            if (nErr)
+                cerr << "Error writing x: " << nErr << '\n';
+            else
+                cout << "\tx : " << xValue << '\n';
+        }
+
+        //  Lettura y
+        nErr = AdsSyncReadReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlY, sizeof(yValue), &yValue);
+        if (nErr)
+            cerr << "Error reading y: " << nErr << '\n';
+        else
+        {
+            yValue += 2.0;  // Incremento
+
+            // Scrittura del nuovo valore in y
+            nErr = AdsSyncWriteReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlY, sizeof(yValue), &yValue);
+            if (nErr)
+                cerr << "Error writing y: " << nErr << '\n';
+            else
+                cout << "\ty: " << yValue << '\n';
+        }
+
+        //  Lettura z
+        nErr = AdsSyncReadReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlZ, sizeof(zValue), &zValue);
+        if (nErr)
+            cerr << "Error reading z: " << nErr << '\n';
+        else
+        {
+            zValue -= 1.0;  // Decremento
+
+            // Scrittura del nuovo valore in z
+            nErr = AdsSyncWriteReq(pAddr, ADSIGRP_SYM_VALBYHND, lHdlZ, sizeof(zValue), &zValue);
+            if (nErr)
+                cerr << "Error writing z: " << nErr << '\n';
+            else
+                cout << "\tz: " << zValue << '\n';
+        }
+
+        Sleep(100);
+    }
+
+
+    //Release handle of plc variable
+    nErr = AdsSyncWriteReq(pAddr, ADSIGRP_SYM_RELEASEHND, 0, sizeof(lHdlCnt), &lHdlCnt);
+    if (nErr) cerr << "Error: AdsSyncWriteReq: " << nErr << '\n';
+
+    // Close communication port
+    nErr = AdsPortClose();
+    if (nErr) cerr << "Error: AdsPortClose: " << nErr << '\n';
+}
+
 int main() 
 {
     //
@@ -724,21 +840,25 @@ int main()
     //  Funzioni
     //
 
+    testPLC();
+
     //startSystemAlign(visionaryType, deviceIpAddr, streamingPort);
 
     //TestFindBinderHead();
     
     //interactive3DCutPlaneFinderFromFile();
+    
+    //interactive3DCutPlaneFinderFromCamera(visionaryType, deviceIpAddr, streamingPort);
 
     //processPointCloudFromFile();
 
     //getBinderPointCloud();
 
     // Inizia la trasmissione dei dati
-    exitCode = runContinuousStreamingDemo(
+    /*exitCode = runContinuousStreamingDemo(
         visionaryType, transportProtocol, deviceIpAddr, receiverIp,streamingPort, cnt, filePrefix, storeData,
         scale, originPlaneProjection, normal, originCutPlanes, inclinationCutPlanes
-    );
+    );*/
 
     std::cout << "exit code " << static_cast<int>(exitCode) << '\n';
 

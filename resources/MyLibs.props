@@ -18,6 +18,7 @@
 				$(ProjectDir)dependencies\OpenCV\include\opencv4;
 				$(ProjectDir)dependencies\SICK Visionary\include;
 				$(ProjectDir)dependencies\Json\include;
+				$(ProjectDir)dependencies\TwinCAT\AdsApi\TcAdsDll\Include;
 				$(ProjectDir)include;
 				%(AdditionalIncludeDirectories)
 			</AdditionalIncludeDirectories>
@@ -79,6 +80,9 @@
 				flann_cpp_s.lib;
 				qhullstatic.lib;
 				qhullstatic_r.lib;
+
+				TcAdsDll.lib;
+				
 				%(AdditionalDependencies)
 			</AdditionalDependencies>
 			<AdditionalLibraryDirectories>
@@ -90,6 +94,7 @@
 				$(ProjectDir)dependencies\Open3d\lib;
 				$(ProjectDir)dependencies\OpenCV\lib;
 				$(ProjectDir)dependencies\SICK Visionary;
+				$(ProjectDir)dependencies\TwinCAT\AdsApi\TcAdsDll\Lib\x64;
 				%(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
 		</Link>
